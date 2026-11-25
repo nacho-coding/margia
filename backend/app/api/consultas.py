@@ -78,7 +78,7 @@ def contexto(db: Session) -> Contexto:
                     mercados=[{"id": m.id, "nombre": m.nombre} for m in mercados],
                     manifiesto=snapshot.manifiesto,
                     modulos={"centro": "Datos observados y radar de marca", "medicion": "MMM nacional validado temporalmente y atribución descriptiva",
-                             "one-search": "Evidencia histórica y simulador económico de marca", "creatividad": "Biblioteca observada; pretest pendiente",
+                             "one-search": "Evidencia histórica y simulador económico de marca", "creatividad": "Biblioteca, CTR contextual, pretest y selección de hipótesis",
                              "experimentos": "Diseño geo, ejecución sintética, evaluación y valor de información", "escenarios": "En desarrollo · Día 4",
                              "fiabilidad": "Integridad de fuentes; incidencias alternativas pendientes"})
 
@@ -198,6 +198,10 @@ def fiabilidad(db: Session) -> Fiabilidad:
             if not completa_geo:
                 bloqueado = True
                 incidencias.append(dict(causa="Evidencia geográfica vigente incompleta", accion="Restaurar observaciones antes de evaluar marca."))
+    from app.modelos.creatividad import VERSION as VERSION_CREATIVIDAD
+    creativo = db.scalar(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION_CREATIVIDAD))
+    if creativo:
+        diagnostico += f" {creativo.version}: {creativo.resultado['estado']}; CTR contextual, sin efecto visual causal identificado."
     return Fiabilidad(snapshot=snapshot.id, estado="bloqueado" if bloqueado else "limitado", fuentes=fuentes,
                        reglas=reglas, incidencias=incidencias, checksum=snapshot.checksum,
                        diagnostico_modelos=diagnostico + " La cobertura parcial limita las fuentes indicadas.")

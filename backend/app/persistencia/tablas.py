@@ -238,3 +238,22 @@ class SimulacionSearch(Base):
     entradas: Mapped[dict] = mapped_column(JSON)
     resultado: Mapped[dict] = mapped_column(JSON)
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PretestCreativo(Base):
+    __tablename__ = "pretest_creativo"
+    id: Mapped[str] = mapped_column(String(60), primary_key=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshot.id"), index=True)
+    modelo_id: Mapped[str] = mapped_column(ForeignKey("modelo.id"))
+    entradas: Mapped[dict] = mapped_column(JSON)
+    resultado: Mapped[dict] = mapped_column(JSON)
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class SeleccionCreativa(Base):
+    __tablename__ = "seleccion_creativa"
+    __table_args__ = (UniqueConstraint("pretest_id", "variante_id"),)
+    id: Mapped[str] = mapped_column(String(60), primary_key=True)
+    pretest_id: Mapped[str] = mapped_column(ForeignKey("pretest_creativo.id"), index=True)
+    variante_id: Mapped[str] = mapped_column(String(40))
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

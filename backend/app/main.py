@@ -34,7 +34,9 @@ from app.api.contratos import (
     SimulacionSearchRespuesta,
     TablaDatos,
 )
+from app.api.creatividad_rutas import router as creatividad_router
 from app.api.geo_rutas import router as geo_router
+from app.creatividad.servicio import asegurar_creatividad
 from app.datos.generador import generar
 from app.datos.historia_search import asegurar_historia
 from app.dominio.economia import cociente
@@ -72,6 +74,7 @@ app = FastAPI(title="MARGIA · API de la demo sintética", version="0.1.0",
               description="Datos 100 % sintéticos. Sin activación de publicidad real.",
               docs_url="/api/documentacion", openapi_url="/api/openapi.json", redoc_url=None)
 app.include_router(geo_router)
+app.include_router(creatividad_router)
 
 
 @app.exception_handler(SQLAlchemyError)
@@ -205,7 +208,11 @@ def obtener_oportunidades(db: Db, filtro: FiltroAPI):
 @app.get("/api/v1/creativos", response_model=TablaDatos)
 def obtener_creativos(db: Db, filtro: FiltroAPI, pagina: int = Query(1, ge=1),
                       canal: str | None = Query(None, max_length=30),
-                      categoria: str | None = Query(None, max_length=30)):
+                      categoria: str | None = Query(None, max_length=30),
+                      audiencia: str | None = Query(None, pattern=r"^Cohorte 0[1-8]$"),
+                      formato: str | None = Query(None, max_length=40),
+                      objetivo: str | None = Query(None, max_length=40),
+                      orden: str = Query("id", pattern="^(id|inversion|ctr|cvr)$")):
     condiciones = filtro.condiciones(C)
     if canal:
         if db.get(Canal, canal) is None:
@@ -215,6 +222,16 @@ def obtener_creativos(db: Db, filtro: FiltroAPI, pagina: int = Query(1, ge=1),
         if categoria not in ("moda", "hogar", "belleza"):
             raise HTTPException(422, "Categoría no válida.")
         condiciones.append(Campana.categoria == categoria)
+    if audiencia:
+        condiciones.append(Creativo.atributos["audiencia"].as_string() == audiencia)
+    if formato:
+        if formato != "Cuadrado 1:1":
+            raise HTTPException(422, "Formato no disponible en la biblioteca.")
+        condiciones.append(Creativo.formato == formato)
+    if objetivo:
+        if objetivo not in ("Consideración", "Captación"):
+            raise HTTPException(422, "Objetivo no válido.")
+        condiciones.append(Campana.objetivo == objetivo)
     consulta = select(Creativo.id, Creativo.nombre, Creativo.asset, Creativo.atributos,
                       Canal.nombre, Creativo.formato, func.sum(C.impresiones), func.sum(C.clics),
                       func.sum(C.conversiones), func.sum(C.gasto_cent), Creativo.licencia,
@@ -224,7 +241,10 @@ def obtener_creativos(db: Db, filtro: FiltroAPI, pagina: int = Query(1, ge=1),
     total = db.scalar(select(func.count()).select_from(consulta.subquery()))
     paginas = max(1, math.ceil(total/12))
     pagina = min(pagina, paginas)
-    filas = db.execute(consulta.order_by(Creativo.id).offset((pagina-1)*12).limit(12)).all()
+    orden_sql = {"id": Creativo.id, "inversion": func.sum(C.gasto_cent).desc(),
+        "ctr": (func.sum(C.clics)*1.0/func.nullif(func.sum(C.impresiones), 0)).desc().nullslast(),
+        "cvr": (func.sum(C.conversiones)*1.0/func.nullif(func.sum(C.clics), 0)).desc().nullslast()}[orden]
+    filas = db.execute(consulta.order_by(orden_sql, Creativo.id).offset((pagina-1)*12).limit(12)).all()
     return TablaDatos(periodo=filtro.periodo(), filas=[dict(id=f[0], nombre=f[1], asset=f[2], atributos=f[3],
                     canal=f[4], formato=f[5], impresiones=f[6], clics=f[7], conversiones=f[8],
                     inversion=float(f[9])/100, ctr=cociente(f[7], f[6]), cvr=cociente(f[8], f[7]),
@@ -232,7 +252,7 @@ def obtener_creativos(db: Db, filtro: FiltroAPI, pagina: int = Query(1, ge=1),
                     total=total, pagina=pagina, paginas=paginas, evidencia="Observado sintético",
                     cobertura="Últimos 28 días; muestra parcial de mercados por activo. El gasto es una vista parcial de medios.",
                     advertencias=["Composiciones originales reutilizadas explícitamente en 80 registros.",
-                                  "Métricas descriptivas; pretest, A/B y efecto en escenarios pendientes del Día 4."])
+                                  "El pretest usa un modelo de CTR separado de estas métricas; A/B y efecto en escenarios pendientes."])
 
 
 @app.get("/api/v1/fiabilidad", response_model=Fiabilidad)
@@ -270,6 +290,7 @@ def reset_demo(confirmacion: ConfirmacionReset, db: Db):
     asegurar_modelo(db, snapshot)
     asegurar_historia(db, snapshot)
     asegurar_search(db, snapshot)
+    asegurar_creatividad(db, snapshot)
     db.commit()
     return {"estado": "restablecido", "snapshot": m["id"], "checksum": m["checksum"],
             "segundos": round(time.perf_counter()-inicio, 3)}
