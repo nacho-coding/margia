@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.stats import norm, t
 
-VERSION = "geo-1.0.0"
+VERSION = "geo-1.0.1"
 VERSION_SEARCH_GEO = "search-geo-1.0.0"
 
 

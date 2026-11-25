@@ -80,8 +80,8 @@ def informacion_diseno(db, snapshot, entrada, plan, modelo):
     gasto = float(db.scalar(select(func.sum(MediosDiarios.gasto_cent)).where(
         *filtro.condiciones(MediosDiarios), MediosDiarios.canal_id == "sem_marca")))/100
     _, draws = respuesta_recorte(modelo.resultado, entrada.recorte_pct/100)
-    # Discretización determinista de incertidumbre histórica, sin nueva estimación.
-    estados = np.quantile(draws, np.linspace(.0125, .9875, 40))
+    # Prior empírico completo: no omitir colas pequeñas que cambian la acción.
+    estados = np.asarray(draws, dtype=float)
     ahorro = gasto*entrada.recorte_pct/100
     utilidades = np.array([comparar_captura(actual["pedidos"], actual["margen"], actual["inversion"], gasto,
         entrada.recorte_pct/100, ahorro*tau, entrada.cuota_plataforma)["delta"] for tau in estados])

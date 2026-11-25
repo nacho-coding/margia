@@ -144,7 +144,11 @@ def test_api_simulador_radar_reproducible_guardado_y_abstencion(client):
     if extrapolado:
         assert completo["estado"] == "hipotesis"
     caro = client.post(uri, json={"recorte_pct": 50, "cuota_plataforma": 100000}).json()["resultado"]
-    assert caro["delta"] < 0 and caro["banda"]["probabilidad_perdida"] == 1
+    assert caro["delta"] < 0
+    assert caro["delta"] == pytest.approx(r["delta"]-100000)
+    assert caro["banda"]["probabilidad_perdida"] >= r["banda"]["probabilidad_perdida"]
+    assert caro["banda"]["p05"] == pytest.approx(r["banda"]["p05"]-100000)
+    assert caro["banda"]["p95"] == pytest.approx(r["banda"]["p95"]-100000)
     assert caro["recomendacion"] != "Oportunidad favorable para contrastar en un nuevo experimento"
     local = client.post(uri+"?mercado=m01", json=inputs).json()["resultado"]
     assert local["estado"] == "hipotesis" and local["motivos"]

@@ -129,6 +129,9 @@ def test_valor_informacion_fixture_y_ruido():
     assert valor_informacion([[0, 0], [80, 60]], [1, -1], 1)["evpi"] == 0
     # Igual señal no permite distinguir estados aunque el ruido sea cero.
     assert valor_informacion(u, [1, 1], 0)["evsi"] == 0
+    rara = valor_informacion([[0]*400, [80000]*399+[-60000]], [1]*399+[-1], 0)
+    assert rara["evpi"] == pytest.approx(150)
+    assert rara["evsi"] == pytest.approx(150)
 
 
 def test_api_ciclo_geo_reproducibilidad_versiones_y_economia(geo_client):
@@ -146,6 +149,7 @@ def test_api_ciclo_geo_reproducibilidad_versiones_y_economia(geo_client):
     assert d["protocolo"]["plan"]["potencia_insuficiente"] == (abs(d["protocolo"]["plan"]["efecto_previo_pedidos"]) < d["protocolo"]["plan"]["mde_pedidos"])
     info = d["protocolo"]["informacion"]
     assert 0 <= info["evsi"] <= info["evpi"]
+    assert info["estados"] == 400
     assert info["valor_neto"] < 0 and "no compensa" in info["recomendacion"]
     assert info["costes_totales"] == pytest.approx(100000+info["coste_oportunidad_prueba"])
     assert client.post("/api/v1/experimentos/disenar", json=entrada).json()["reutilizada"]
