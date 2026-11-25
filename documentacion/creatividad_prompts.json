@@ -1,0 +1,44 @@
+{
+  "herramienta": "Imagegen integrada; generación durante el desarrollo",
+  "fecha": "2026-11-25",
+  "version": "fotografia-2.0.0",
+  "origen": "Imágenes sintéticas originales para AUREL, marca ficticia. Sin fotografías de terceros.",
+  "prompts": [
+    {
+      "id": "hogar-espacio",
+      "prompt": "Use case: ads-marketing. Asset type: photorealistic photographic key visual for the fictional Spanish homeware brand AUREL in a local marketing demo. Primary request: a believable premium retail advertising photograph, NOT a drawing, SVG, 3D render or mockup. Scene: a real quiet Mediterranean living room, warm ivory limewashed wall, oak console, a handmade olive-green ceramic vase with a few olive branches, folded natural linen. The vase is the hero at the center of the lower two thirds, realistic glaze irregularities, tactile ceramic, natural imperfect leaves, soft afternoon window light and physically plausible shadows. Composition: vertical 3:4 portrait, camera at console level, 50mm editorial photography, enough quiet space at top and around subject for typographic overlays and safe center crops into 9:16 and 4:5. High-end contemporary homeware campaign, understated, warm and genuinely photographic. Keep the whole vase inside the central 55% width; do not crop product. Text: none. No visible logos, lettering, watermark, platform interface, people, generated gibberish, graphic borders or collage."
+    },
+    {
+      "id": "hogar-marco",
+      "prompt": "A photorealistic premium retail advertising photo for fictional Spanish homeware brand AUREL. Vertical 3:4 portrait. A single olive-green handmade ceramic vase with two olive sprigs on a pale limestone plinth against a warm ivory plaster wall. Close enough to reveal fine glaze crackle, tiny real imperfections, the lip and rounded body; whole vase visible, no crop. Raking morning window light and an authentic soft shadow across the stone; quiet tactile editorial product photography, 85mm lens, natural colors, believable scale. Vase centered within middle 55% width, upper quarter calm wall for copy, lower fifth clear stone. No text, logos, labels, watermark, graphic overlay, illustration, CGI, collage, frame or interface."
+    },
+    {
+      "id": "hogar-detalle",
+      "prompt": "Photorealistic lifestyle retail campaign photo for fictional Spanish homeware brand AUREL. Vertical 3:4 portrait, candid yet premium 50mm photography, warm real Mediterranean interior, subtle sunlight. An adult's natural hands with a white linen sleeve carefully arranging three olive branches in an olive-green handmade ceramic vase on an oak dining table; only hands and forearms, no face. Vase and branches intact, plausible anatomy and gravity, soft linen folds, tactile glazing, imperfect small leaves and authentic contact shadows. Product centered, hands enter from right edge, enough headroom for text and room at bottom. Restrained natural warm palette, product in everyday use. No text, logos, lettering, watermark, collage, graphic design, synthetic 3D or vector style."
+    },
+    {
+      "id": "moda-espacio",
+      "prompt": "Use case: ads-marketing. Photorealistic premium fashion campaign photo for fictional Spanish retail label AUREL. A real-looking adult woman wearing an unbranded relaxed sand-beige linen shirt with rolled sleeves and cream trousers in a sunlit Mediterranean courtyard; frame from chin to upper thighs, no visible face. Fine natural linen weave, authentic seams and buttons, elegant easy fit and natural body posture, one hand resting loosely near a pocket. Warm pale stone background, late-afternoon side light, subtle real shadows, restrained editorial 50mm photography, not CGI. Vertical 3:4 portrait. Torso centered in the central 60%, generous neutral wall at top and sides for short overlay copy; shirt must remain the hero. No text, lettering, logo, watermark, other brands, graphic borders, interface or collage."
+    },
+    {
+      "id": "moda-marco",
+      "prompt": "Use case: ads-marketing. A photorealistic premium fashion still life for fictional Spanish brand AUREL: one exquisite unbranded sand-beige linen shirt carefully folded on a pale warm travertine table, open cuff and real mother-of-pearl buttons visible, natural small folds and fibers, a soft curved sleeve creating an elegant diagonal. Single garment, no accessories, no shopping bag or packaging. Directional soft window light and beautiful subtle real shadow, rich material detail, professional 85mm editorial product photography, no artificial plastic texture. Vertical 3:4 portrait, shirt centered in lower middle, upper quarter calm warm grey stone wall for copy, full garment arrangement inside central 65% width. No lettering, logos, watermark, graphic layout, collage, illustration or CGI."
+    },
+    {
+      "id": "moda-detalle",
+      "prompt": "Use case: ads-marketing. Photorealistic candid fashion advertising image for fictional Spanish brand AUREL. Close portrait crop of an adult woman from shoulders to hips, wearing a relaxed unbranded sand-beige linen shirt with rolled sleeves, adjusting the opposite cuff naturally with one hand, realistic hand anatomy and fabric tension. No face or head visible. Sunlit quiet limestone street softly out of focus, warm editorial palette, tactile linen weave, authentic natural creases and stitching, 50mm lens, premium fashion retailer quality, no fashion-brand cues. Vertical 3:4 portrait, shirt and hands within center 65%, enough negative space around them for simple overlay copy. No text, labels, watermark, logos, graphic design, illustration, 3D or collage."
+    },
+    {
+      "id": "belleza-espacio",
+      "prompt": "Use case: ads-marketing. Photorealistic premium skincare product advertising photo for fictional Spanish retail brand AUREL. A warm amber glass dropper bottle with an ivory blank paper label and a cream cap, next to a small simple cream skincare carton with NO writing, on a pale warm travertine bathroom shelf. Natural morning window light, subtle real glass reflections and contact shadows, a softly blurred ivory plaster background, a folded white hand towel at the edge. Quiet contemporary beauty campaign, elegant and tactile, 85mm professional product photography, no medical claims. Vertical 3:4 portrait, full products centered in lower two thirds, quiet clear space above, objects within central 55% width. Absolutely no lettering, logo, watermark, text, UI, collage, illustration, plastic CGI finish or floating objects."
+    },
+    {
+      "id": "belleza-marco",
+      "prompt": "Use case: ads-marketing. Photorealistic premium beauty campaign still life for fictional Spanish retail brand AUREL. A single amber glass dropper bottle with a small completely blank ivory label, cream rubber bulb and metallic warm silver collar, standing on a pale stone surface with a small clear water droplet nearby. Side-lit close product photography, realistic fine glass reflections, condensation-free clean glass, plausible shadow and subtle irregularities in the stone. Warm beige background, sophisticated natural light, no heavy retouching, no CGI. Vertical 3:4 portrait, full bottle visible centered in central 50%, upper third calm empty background and space below for layout, strong material texture. No words, brand names, logo, watermark, interface, illustration, graphic text, fake claims or collage."
+    },
+    {
+      "id": "belleza-detalle",
+      "prompt": "Use case: ads-marketing. Photorealistic lifestyle beauty advertising photograph for fictional Spanish retailer AUREL. Adult hands in a gentle everyday skincare ritual on a warm pale stone bathroom counter. One natural hand holds a glass pipette above the back of the other hand, one small clear droplet at the tip, realistic skin texture and correct anatomy, an open amber dropper bottle with completely blank ivory label standing on the counter below. No face, no body other than hands and forearms, neutral linen sleeves. Calm morning natural window light, soft real shadows, subtle highlights on glass and liquid, professional 50mm photography, quiet warm ivory palette, no claims of efficacy. Vertical 3:4 portrait, main hands and bottle clustered in central 60% width, enough quiet space above and below for ad text, keep product clearly recognizable. No words, logos, labels with text, watermark, platform interface, illustration, CGI, collage or graphic design."
+    }
+  ]
+}

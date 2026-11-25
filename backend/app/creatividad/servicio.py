@@ -7,6 +7,7 @@ from sqlalchemy import func, select, text
 
 from app.api.consultas import snapshot_actual
 from app.api.creatividad_contratos import ParametrosPretest
+from app.creatividad.recursos import PLATAFORMAS, variantes_de
 from app.modelos.creatividad import VERSION, entrenar_creatividad, predecir_contexto
 from app.persistencia.tablas import (
     Campana,
@@ -17,17 +18,6 @@ from app.persistencia.tablas import (
     PretestCreativo,
     SeleccionCreativa,
 )
-
-ESTILOS = [("espacio", "Espacio para el producto", "Bodegón y jerarquía tipográfica"),
-           ("marco", "Una selección enmarcada", "Encuadre y separación del mensaje"),
-           ("detalle", "El detalle como protagonista", "Producto ampliado y lectura editorial")]
-
-
-def variantes_de(perfil):
-    categoria = perfil["categoria"]
-    return [dict(id=f"{categoria}-{vid}", categoria=categoria, nombre=nombre, composicion=composicion,
-        asset=f"/assets/creatividad/pretest-{categoria}-{vid}.svg", tono=perfil["tono"], cta=perfil["cta"],
-        version_recurso="variantes-1.0.0", licencia="Original MARGIA · CC BY 4.0") for vid, nombre, composicion in ESTILOS]
 
 
 def observaciones(db, snapshot):
@@ -72,7 +62,8 @@ def catalogo(db):
                for c in db.scalars(select(Canal).where(Canal.id.in_(m["referencias"])).order_by(Canal.nombre))]
     publicos = {k: v for k, v in m.items() if k not in ("parametros", "draws")}
     return dict(modelo=publicos, canales=canales, perfiles=m["perfiles"], defecto=ParametrosPretest(),
-        variantes=[v for p in m["perfiles"] for v in variantes_de(p)],
+        variantes=[v for p in m["perfiles"] for canal in PLATAFORMAS for v in variantes_de(p, canal)],
+        plataformas=list(PLATAFORMAS.values()),
         formatos=["Cuadrado 1:1"], objetivos=["Consideración", "Captación"],
         audiencias=sorted(m["schema"]["niveles"]["audiencia"]),
         alcance="Estimación nacional con contexto del pretest. Los filtros globales seleccionan observaciones de la biblioteca; no reentrenan.")
@@ -105,22 +96,24 @@ def evaluar(db, entrada):
     variantes = [dict(v,
         ctr_referencia=referencia["ctr"], p05=referencia["p05"], p95=referencia["p95"],
         clics_referencia=referencia["clics_esperados"], efecto_diferencial_identificado=False,
-        multiplicador_demanda=1.0) for v in variantes_de(perfil)]
+        multiplicador_demanda=1.0) for v in variantes_de(perfil, entrada.canal)]
     motivos = referencia["motivos"]+["El histórico no permite distinguir estas composiciones: no hay un ganador predictivo."]
     ctr_es = f"{referencia['ctr']*100:.2f}".replace(".", ",")+" %"
     nombre_canal = db.get(Canal, entrada.canal).nombre
     resultado = dict(snapshot=snapshot.id, modelo=modelo.id, version=VERSION, semilla=m["semilla"],
         entradas=entrada.model_dump(), estado="bloqueado" if m["estado"] == "bloqueado" else "hipotesis",
-        evidencia="Pretest estadístico de contexto; composiciones originales precreadas", ganador=None,
+        evidencia="Pretest de contexto; preparación simulada con imágenes sintéticas precreadas", ganador=None,
         motivos=motivos, referencia=referencia, variantes=variantes,
         brief=dict(metodo="Plantilla determinista basada en contexto y diagnóstico; sin generación IA en ejecución",
             objetivo=entrada.objetivo,
-            texto=f"Explorar tres jerarquías visuales para {entrada.categoria} en {nombre_canal}, {entrada.audiencia}. Mantener el tono {perfil['tono'].lower()} y el CTA «{perfil['cta']}». La referencia contextual es {ctr_es} de CTR; validar la composición mediante una prueba aleatoria.",
+            texto=f"Explorar tres escenas fotográficas para {entrada.categoria} en {nombre_canal}, {entrada.audiencia}, con lienzo {PLATAFORMAS[entrada.canal]['relacion']} ({PLATAFORMAS[entrada.canal]['ubicacion']}). Mantener el tono {perfil['tono'].lower()} y el CTA «{perfil['cta']}». La referencia contextual es {ctr_es} de CTR; validar la composición mediante una prueba aleatoria.",
             reglas=["Marca ficticia AUREL; producto reconocible y CTA legible, sin marcas de terceros.",
                 "Mantener producto, CTA, tono y exposición comparables al contrastar composiciones.",
                 "Las cifras son referencia del contexto; no atribuir diferencias a píxeles ni prometer ventas.",
                 "La selección expresa una hipótesis. La respuesta económica permanece sin cambio hasta evidencia compatible."]),
-        advertencias=m["advertencias"]+["Los activos son locales y precreados; el formulario no genera imágenes ni modifica sus textos.",
+        advertencias=m["advertencias"]+["Preparación simulada con imágenes generadas durante el desarrollo y composición local; sin generación IA al ejecutar.",
+            "El formato adaptado no tiene observaciones propias: el CTR contextual no estima el efecto del placement ni de la fotografía.",
+            "TikTok y YouTube muestran fotogramas estáticos de ejemplo; no se han generado vídeos ni anuncios listos para activar.",
             "La referencia de clics es esperanza condicional, no un intervalo de conteos futuros."])
     pid = "pretest-"+hashlib.sha256(json.dumps(resultado, sort_keys=True).encode()).hexdigest()[:24]
     existente = db.get(PretestCreativo, pid)

@@ -1,0 +1,78 @@
+{
+  "version": "fotografia-2.0.0",
+  "origen": "Imagen sintética generada con IA durante el desarrollo",
+  "imagenes": [
+    {
+      "id": "hogar-espacio",
+      "asset": "/assets/creatividad/fotografia-v2/hogar-espacio.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 108028,
+      "sha256": "dd0114b5a2bcc4287432eb4da31064986daa5c3d98957563d68b2315caf16a26"
+    },
+    {
+      "id": "hogar-marco",
+      "asset": "/assets/creatividad/fotografia-v2/hogar-marco.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 151990,
+      "sha256": "d8959e34cf0eb7cb41b728de124fa9998fac7522e52e02fbb86bd334d6176806"
+    },
+    {
+      "id": "hogar-detalle",
+      "asset": "/assets/creatividad/fotografia-v2/hogar-detalle.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 115792,
+      "sha256": "84fca4da8a30b9a9e3adcdff53ca9f70365abcca45db2486b0c1d6319002551e"
+    },
+    {
+      "id": "moda-espacio",
+      "asset": "/assets/creatividad/fotografia-v2/moda-espacio.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 147802,
+      "sha256": "44995681416c3a92517ac1eb4ceb44588e335909b77e3406e6606d6eaef13041"
+    },
+    {
+      "id": "moda-marco",
+      "asset": "/assets/creatividad/fotografia-v2/moda-marco.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 169146,
+      "sha256": "3fbcbb70ec6ee64af57fa4cb41b425b5992bebc7b3ea2477b5505f87e51d46ac"
+    },
+    {
+      "id": "moda-detalle",
+      "asset": "/assets/creatividad/fotografia-v2/moda-detalle.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 126864,
+      "sha256": "5ecc1eff8eebaa5c2a2fcd0c8018b8fbf3fed8e6132e9d91b0ff3b1ebf01f41d"
+    },
+    {
+      "id": "belleza-espacio",
+      "asset": "/assets/creatividad/fotografia-v2/belleza-espacio.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 86568,
+      "sha256": "7f053762cde395b702a4b811b8d655cbf32912e36a572df58d140f0b2d1bb81a"
+    },
+    {
+      "id": "belleza-marco",
+      "asset": "/assets/creatividad/fotografia-v2/belleza-marco.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 64434,
+      "sha256": "5441af1385e863ce7ec84af3f2bee045165d8369e05cb064f2bea5370dc7451d"
+    },
+    {
+      "id": "belleza-detalle",
+      "asset": "/assets/creatividad/fotografia-v2/belleza-detalle.webp",
+      "ancho": 1086,
+      "alto": 1448,
+      "bytes": 76874,
+      "sha256": "f7c0aaf4738cfdc0821bf7d7329ea10edaf7a82c765edf71fb98c99bdbeecedb"
+    }
+  ]
+}

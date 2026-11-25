@@ -36,6 +36,7 @@ from app.api.contratos import (
 )
 from app.api.creatividad_rutas import router as creatividad_router
 from app.api.geo_rutas import router as geo_router
+from app.creatividad.recursos import vista_biblioteca
 from app.creatividad.servicio import asegurar_creatividad
 from app.datos.generador import generar
 from app.datos.historia_search import asegurar_historia
@@ -235,7 +236,7 @@ def obtener_creativos(db: Db, filtro: FiltroAPI, pagina: int = Query(1, ge=1),
     consulta = select(Creativo.id, Creativo.nombre, Creativo.asset, Creativo.atributos,
                       Canal.nombre, Creativo.formato, func.sum(C.impresiones), func.sum(C.clics),
                       func.sum(C.conversiones), func.sum(C.gasto_cent), Creativo.licencia,
-                      Campana.categoria, func.avg(C.frecuencia))\
+                      Campana.categoria, func.avg(C.frecuencia), Canal.id)\
         .join(Campana, Creativo.campana_id == Campana.id).join(Canal, Campana.canal_id == Canal.id)\
         .join(C, C.creativo_id == Creativo.id).where(*condiciones).group_by(Creativo.id, Canal.id, Campana.categoria)
     total = db.scalar(select(func.count()).select_from(consulta.subquery()))
@@ -248,10 +249,11 @@ def obtener_creativos(db: Db, filtro: FiltroAPI, pagina: int = Query(1, ge=1),
     return TablaDatos(periodo=filtro.periodo(), filas=[dict(id=f[0], nombre=f[1], asset=f[2], atributos=f[3],
                     canal=f[4], formato=f[5], impresiones=f[6], clics=f[7], conversiones=f[8],
                     inversion=float(f[9])/100, ctr=cociente(f[7], f[6]), cvr=cociente(f[8], f[7]),
-                    licencia=f[10], categoria=f[11], frecuencia=float(f[12])) for f in filas],
+                    licencia=f[10], categoria=f[11], frecuencia=float(f[12]),
+                    vista_previa=vista_biblioteca(f[2], f[11], f[13], f[3])) for f in filas],
                     total=total, pagina=pagina, paginas=paginas, evidencia="Observado sintético",
                     cobertura="Últimos 28 días; muestra parcial de mercados por activo. El gasto es una vista parcial de medios.",
-                    advertencias=["Composiciones originales reutilizadas explícitamente en 80 registros.",
+                    advertencias=["Recreaciones fotográficas sintéticas; las métricas pertenecen al registro histórico, no a las fotografías nuevas.",
                                   "El pretest usa un modelo de CTR separado de estas métricas; A/B y efecto en escenarios pendientes."])
 
 

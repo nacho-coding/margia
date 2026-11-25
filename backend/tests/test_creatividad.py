@@ -152,3 +152,43 @@ def test_biblioteca_filtra_y_ordena_sin_sumar_medios(client):
     assert client.get("/api/v1/creativos?objetivo=Captación").json()["total"] == 0
     assert client.get("/api/v1/creativos?formato=desconocido").status_code == 422
     assert client.get("/api/v1/creativos?orden=sql").status_code == 422
+
+
+@pytest.mark.parametrize("canal,relacion", [("meta", "4:5"), ("tiktok", "9:16"), ("display", "1.91:1"), ("youtube", "16:9")])
+def test_pretest_adapta_plataforma_sin_cambiar_evidencia(creativo_client, canal, relacion):
+    c, db = creativo_client
+    catalogo = c.get("/api/v1/creativos/pretest").json()
+    audiencia = next(p for p in catalogo["canales"] if p["id"] == canal)["audiencias"][0]
+    resultado = c.post("/api/v1/creativos/evaluar", json={"canal": canal, "audiencia": audiencia}).json()
+    assert len(resultado["variantes"]) == 3
+    for v in resultado["variantes"]:
+        assert v["plataforma"]["id"] == canal and v["plataforma"]["relacion"] == relacion
+        assert v["asset"].endswith(".webp") and v["version_recurso"] == "fotografia-2.0.0"
+        assert v["ancho"] > 1000 and v["alto"] > v["ancho"] and v["bytes"] < 300000
+        assert v["texto"]["cta"] == v["cta"] and "Imagen sintética" in v["alt"]
+        assert not v["efecto_diferencial_identificado"] and v["multiplicador_demanda"] == 1
+    assert len({v["ctr_referencia"] for v in resultado["variantes"]}) == 1
+    biblioteca = c.get(f"/api/v1/creativos?canal={canal}").json()["filas"]
+    assert biblioteca and all(f["asset"].endswith(".svg") for f in biblioteca)
+    assert all(f["vista_previa"]["plataforma"]["id"] == canal and f["vista_previa"]["recreacion"] for f in biblioteca)
+    assert all(f["vista_previa"]["asset_observado"] == f["asset"] for f in biblioteca)
+    assert actual(db, snapshot_actual(db)).version == VERSION
+
+
+def test_evaluaciones_anteriores_conservan_el_recurso_original(creativo_client):
+    c, db = creativo_client
+    actual_json = c.post("/api/v1/creativos/evaluar", json={}).json()
+    anterior = {k: v for k, v in actual_json.items() if k not in ("id", "reutilizada")}
+    anterior["variantes"] = [dict(id=f"hogar-{vid}", categoria="hogar", nombre="Composición original",
+        composicion="Fixture explícita de evaluación de la versión anterior", asset=f"/assets/creatividad/pretest-hogar-{vid}.svg",
+        tono="Editorial", cta="Descubre la colección", version_recurso="variantes-1.0.0", licencia="Original MARGIA · CC BY 4.0")
+        for vid in ("espacio", "marco", "detalle")]
+    pid = "pretest-version-anterior-qa"
+    db.add(PretestCreativo(id=pid, snapshot_id=actual_json["snapshot"], modelo_id=actual_json["modelo"],
+        entradas=actual_json["entradas"], resultado=anterior))
+    db.commit()
+    consulta = c.get("/api/v1/creativos/evaluaciones/"+pid).json()
+    assert consulta == dict(id=pid, **anterior, reutilizada=True)
+    assert c.post("/api/v1/creativos/evaluar", json={}).json()["id"] == actual_json["id"] != pid
+    seleccion = c.post("/api/v1/creativos/selecciones", json={"pretest_id": pid, "variante_id": "hogar-marco"})
+    assert seleccion.status_code == 200 and seleccion.json()["pretest_id"] == pid
