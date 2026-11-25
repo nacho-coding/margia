@@ -17,7 +17,7 @@ from app.modelos.mmm import VERSION
 from app.modelos.search import VERSION as VERSION_SEARCH
 from app.modelos.search_servicio import search_actual
 from app.persistencia.db import SessionLocal
-from app.persistencia.tablas import Decision, Modelo, NegocioDiario, Snapshot
+from app.persistencia.tablas import Decision, Ejecucion, Modelo, NegocioDiario, Snapshot
 
 if os.environ.get("MARGIA_VALIDACION") != "1":
     raise RuntimeError("Solo se ejecuta con MARGIA_VALIDACION=1 en la pila aislada de QA.")
@@ -64,6 +64,11 @@ with SessionLocal.begin() as db:
         assert ab.status_code == 200, ab.text
         ab = {**ab.json(), "reutilizada": False}
         modelo_ab = db.get(Modelo, ab["protocolo"]["actualizacion"]["modelo"])
+        escenario = client.post("/api/v1/escenarios/ejecutar", json={"nombre": "Fixture operativa de comparación",
+            "seleccion_creativa_id": seleccion["id"], "coste_produccion": 200})
+        assert escenario.status_code == 200, escenario.text
+        escenario = {**escenario.json(), "reutilizada": False}
+        ejecucion = db.get(Ejecucion, escenario["id"])
         expected.write_text(json.dumps({"checksum": snapshot.checksum,
                                         "conteos": snapshot.manifiesto["conteos"],
                                         "modelo": modelo_reproducible,
@@ -74,8 +79,10 @@ with SessionLocal.begin() as db:
                                         "search_vigente_creado": vigente.creado.isoformat(),
                                         "creatividad": creativo_reproducible, "creatividad_creado": creativo.creado.isoformat(),
                                         "pretest": pretest, "seleccion_creativa": seleccion, "ab_creativo": ab,
-                                        "modelo_ab": modelo_ab.resultado, "modelo_ab_creado": modelo_ab.creado.isoformat()}), encoding="utf-8")
-        print("Fixtures de persistencia, MMM, geo, Search, creatividad y A/B preparadas en PostgreSQL de validación.")
+                                        "modelo_ab": modelo_ab.resultado, "modelo_ab_creado": modelo_ab.creado.isoformat(),
+                                        "escenario": escenario, "ejecucion_completa": ejecucion.resultado,
+                                        "ejecucion_creada": ejecucion.creado.isoformat()}), encoding="utf-8")
+        print("Fixtures de persistencia, MMM, geo, Search, creatividad, A/B y escenarios preparadas en PostgreSQL de validación.")
     elif action == "verificar":
         assert db.get(Decision, "qa-persistencia") is not None
         assert snapshot.checksum == json.loads(expected.read_text())["checksum"]
@@ -99,7 +106,14 @@ with SessionLocal.begin() as db:
         modelo_ab = db.get(Modelo, datos["ab_creativo"]["protocolo"]["actualizacion"]["modelo"])
         assert modelo_ab.resultado == datos["modelo_ab"]
         assert modelo_ab.creado.isoformat() == datos["modelo_ab_creado"]
-        print("Reinicio: hechos, MMM, geo, Search, pretest, selección, protocolo/observaciones A/B y aprendizaje conservados sin reentrenar ni reejecutar.")
+        assert client.get("/api/v1/escenarios/ejecuciones/"+datos["escenario"]["id"]).json() == datos["escenario"]
+        ejecucion = db.get(Ejecucion, datos["escenario"]["id"])
+        assert ejecucion.resultado == datos["ejecucion_completa"]
+        assert ejecucion.creado.isoformat() == datos["ejecucion_creada"]
+        repetida = client.post("/api/v1/escenarios/ejecutar", json=datos["escenario"]["entradas"])
+        assert repetida.status_code == 200 and repetida.json()["reutilizada"]
+        assert repetida.json()["resultado"] == datos["escenario"]["resultado"]
+        print("Reinicio: hechos, modelos, Search/geo, pretest/A-B y comparación con sus draws completos, semilla y fecha exacta conservados sin reentrenar ni reejecutar.")
     elif action == "reset":
         before = snapshot.checksum
         assert client.post("/api/v1/demo/reset", json={"confirmacion": "NO"}).status_code == 422
@@ -126,11 +140,14 @@ with SessionLocal.begin() as db:
         assert client.get("/api/v1/creativos/historial").json()["filas"] == []
         assert client.get("/api/v1/creativos/pruebas/"+datos["ab_creativo"]["id"]).status_code == 404
         assert client.get("/api/v1/creativos/pruebas").json()["filas"] == []
+        assert client.get("/api/v1/escenarios/ejecuciones/"+datos["escenario"]["id"]).status_code == 404
+        assert client.get("/api/v1/escenarios").json()["filas"] == []
         with SessionLocal() as despues:
             actual_creativo = creatividad_actual(despues, snapshot)
             assert {k: v for k, v in actual_creativo.resultado.items() if k != "segundos_ajuste"} == creativo_reproducible
             assert actual_creativo.creado != creativo.creado
             assert despues.scalar(select(func.count()).select_from(Modelo).where(Modelo.version == VERSION_AB)) == 0
+            assert despues.scalar(select(func.count()).select_from(Ejecucion)) == 0
         assert client.get("/api/v1/modelos/mmm").status_code == 200
         print(json.dumps({"reinicio": "correcto", "reset": result.json()}, ensure_ascii=False))
     else:

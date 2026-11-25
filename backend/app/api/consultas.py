@@ -79,7 +79,7 @@ def contexto(db: Session) -> Contexto:
                     manifiesto=snapshot.manifiesto,
                     modulos={"centro": "Datos observados y radar de marca", "medicion": "MMM nacional validado temporalmente y atribución descriptiva",
                              "one-search": "Evidencia histórica y simulador económico de marca", "creatividad": "Biblioteca, pretest, A/B aleatorio y aprendizaje de CTR por contexto",
-                             "experimentos": "Diseño geo, ejecución sintética, evaluación y valor de información", "escenarios": "En desarrollo · Día 4",
+                             "experimentos": "Diseño geo, ejecución sintética, evaluación y valor de información", "escenarios": "Base, ahorro, reinversión y búsqueda con restricciones y evidencia",
                              "fiabilidad": "Integridad de fuentes; incidencias alternativas pendientes"})
 
 

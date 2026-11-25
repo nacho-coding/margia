@@ -257,3 +257,31 @@ class SeleccionCreativa(Base):
     pretest_id: Mapped[str] = mapped_column(ForeignKey("pretest_creativo.id"), index=True)
     variante_id: Mapped[str] = mapped_column(String(40))
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Escenario(Base):
+    __tablename__ = "escenario"
+    __table_args__ = (CheckConstraint("revision >= 1"),)
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshot.id"), index=True)
+    nombre: Mapped[str] = mapped_column(String(100))
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    estado: Mapped[str] = mapped_column(String(25))
+    parametros: Mapped[dict] = mapped_column(JSON)
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Ejecucion(Base):
+    __tablename__ = "ejecucion"
+    __table_args__ = (CheckConstraint("revision >= 1"),)
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    escenario_id: Mapped[str] = mapped_column(ForeignKey("escenario.id"), index=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshot.id"), index=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    version: Mapped[str] = mapped_column(String(30))
+    semilla: Mapped[int] = mapped_column(Integer)
+    entradas: Mapped[dict] = mapped_column(JSON)
+    modelos: Mapped[dict] = mapped_column(JSON)
+    checksum_fuentes: Mapped[str] = mapped_column(String(64))
+    resultado: Mapped[dict] = mapped_column(JSON)
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

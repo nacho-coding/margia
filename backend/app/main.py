@@ -36,6 +36,7 @@ from app.api.contratos import (
     TablaDatos,
 )
 from app.api.creatividad_rutas import router as creatividad_router
+from app.api.escenarios_rutas import router as escenarios_router
 from app.api.geo_rutas import router as geo_router
 from app.creatividad.recursos import vista_biblioteca
 from app.creatividad.servicio import asegurar_creatividad
@@ -78,6 +79,7 @@ app = FastAPI(title="MARGIA · API de la demo sintética", version="0.1.0",
 app.include_router(geo_router)
 app.include_router(creatividad_router)
 app.include_router(ab_router)
+app.include_router(escenarios_router)
 
 
 @app.exception_handler(SQLAlchemyError)
