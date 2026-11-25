@@ -1,4 +1,4 @@
-# Arquitectura implementada · Fundaciones, Medición, Search y experimentación
+# Arquitectura implementada · Medición, Search, experimentación y creatividad
 
 El [RFC](../RFC.md) recoge el diseño objetivo; este archivo describe únicamente el incremento existente.
 
@@ -46,7 +46,7 @@ El MMM solo usa siete canales de demanda; SEM marca sigue en los hechos observad
 
 ## Pendientes deliberados
 
-Creatividad predictiva/A-B, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D4–D5. Escenarios permanece identificado como en desarrollo. La biblioteca creativa existente es descriptiva. La respuesta creativa se ampliará y probará antes de utilizarse en escenarios.
+A/B creativo, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D4.2–D5. Escenarios permanece identificado como en desarrollo. El pretest creativo guarda hipótesis contextuales; la respuesta económica sigue en 1 hasta evidencia compatible.
 
 ## One Search y radar
 
@@ -65,3 +65,11 @@ Se reutilizan `experimento` (protocolo/eventos JSON), `asignacion_experimento`, 
 Una evaluación compatible sustituye Search mediante nueva versión con relación al modelo anterior. La cadena determina el vigente; no depende de timestamps. Copias idénticas reutilizan la versión, diseños obsoletos no la sobrescriben y evaluaciones anteriores siguen consultables. Fiabilidad valida también cobertura de la evidencia vigente. La optimización MMM permanece bloqueada por su propio diagnóstico.
 
 `GET /api/v1/experimentos`, `POST /experimentos/disenar`, `GET /experimentos/{id}` y POST `/ejecutar`, `/evaluar`, `/aceptar`, con contratos Pydantic/OpenAPI. Persistencia/reset y fórmulas detalladas en [experimentos_geo.md](experimentos_geo.md).
+
+## Biblioteca y pretest creativo
+
+`app/modelos/creatividad.py` ajusta una regresión binomial regularizada de clics/impresiones. Estimador puro, train/holdout separados por fechas y componentes de composición/campaña, referencia por canal y 200 refits por grupos. `app/creatividad/servicio.py` carga observaciones, conserva el modelo versionado y calcula las referencias/brief en Python. Las lecturas no ajustan ni generan recursos.
+
+Migración 0004 añade `pretest_creativo` y `seleccion_creativa`. Evaluaciones por contenido y selecciones inmutables guardan snapshot, versión, semilla, inputs y referencia del recurso local. Advisory lock común serializa mutaciones con reset. El arranque prepara el modelo creativo tras MMM/Search y el reset lo reconstruye dentro de la transacción.
+
+El frontend usa los filtros de biblioteca y un formulario de pretest; presenta tres SVG originales precreados con referencia contextual compartida y guarda una hipótesis. No identifica un ganador ni transforma CTR/CVR en pedidos. Multiplicador económico 1 hasta A/B compatible; sin integración de escenarios todavía. API, diagnóstico, denominadores y límites en [creatividad.md](creatividad.md).

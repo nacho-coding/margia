@@ -215,3 +215,53 @@ Checksum del negocio intacto: `6715a0eb83a485c083b145e237a124a5923da2b742d119f41
 - **Días 1–3 cerrados.** Siguiente: D4.1, modelo creativo ligero, tres variantes y brief por reglas; después A/B y orquestador/optimización. Día 5: CRUD de escenarios, decisiones/exportación e incidencias/restauración; Día 6: congelación, regresión final, rendimiento, auditoría y presentación. P1/P2 continúan aplazados.
 - El reparto MMM permanece bloqueado por sensibilidad: el futuro orquestador debe respetarlo o aportar calibración compatible, sin relajar umbrales. EVSI es aproximado y depende del likelihood; no se promete potencia real ni independencia entre ramas sintéticas. La aprobación de medios y la POC completa siguen pendientes.
 - Método y límites en [experimentos_geo.md](experimentos_geo.md). Sin agentes/subagentes, datos reales, LLM, GPU ni servicios externos de runtime.
+
+## 25/11/2026 · Inicio de creatividad predictiva (D4.1 del backlog)
+
+- Inspección: árbol limpio en `main`, HEAD `a957663`, origin correcto y fetch sin divergencias. Tres contenedores principales saludables. Releídos AGENTS, seis contratos, avances y pendientes; trabajo secuencial sin agentes.
+- Alcance: modelo binomial regularizado de CTR con denominadores reales, validación temporal y por composición/campaña, referencia por canal, incertidumbre por grupos y artefacto persistente. Biblioteca con filtros y pretest de tres composiciones locales, brief por reglas y selección guardada para pasos posteriores.
+- Restricción identificada: 28 días; categoría/tono/CTA ligados y composición no identificada por el modelo. Se estimarán paquetes observados; las composiciones nuevas compartirán referencia contextual sin inventar diferencias ni un ganador. El multiplicador económico seguirá en 1 hasta evidencia compatible. D4.2 A/B y D4.3 escenarios permanecen fuera de este corte.
+- Pruebas previstas: separación de campañas/composiciones y fechas, alteración de holdout sin cambiar parámetros, CTR ponderado, reproducibilidad, bandas y abstención, integridad/identidad de hechos, API/selección, arranque vacío/reinicio/reset; pytest/Ruff, lint/TypeScript/build y Playwright/axe/capturas. Sin verificaciones nuevas declaradas aún.
+- Modern Web Guidance: guía `forms` consultada; se reutilizan componentes accesibles y activos originales, sin dependencias nuevas.
+
+## 25/11/2026 · D4.1 cerrado: biblioteca y pretest creativo contextual
+
+### Implementado y límites respetados
+
+- Biblioteca con filtros de canal, categoría, audiencia y objetivo, ordenación por ID/inversión/CTR/CVR, paginación, detalle y vacío real. Se conservan las 12 composiciones observadas, 80 registros y todos los hechos originales.
+- Modelo `creatividad-1.0.0`: binomial de clics/impresiones, ridge fija 10, train/holdout separados por composición/campaña y fecha, naive por canal y 200 refits de grupos completos. Parámetros, semilla, checksum, soporte y métricas persistidos. No importa el mundo ni usa verdad/futuro; las lecturas y filtros no reentrenan. CVR sigue siendo conversión/clic observado en train por canal.
+- Tres composiciones precreadas por perfil (nueve SVG originales locales), formulario de contexto, referencia CTR y esperanza de clics, brief por reglas, selección persistente e historial. Migración aditiva 0004. El frontend presenta; Python calcula. Sin IA generativa fingida ni servicios nuevos.
+- El histórico no identifica efectos diferenciales de estas composiciones: las tres comparten referencia y bandas, sin ganador. Categoría/tono/CTA forman un paquete. Multiplicador económico 1 hasta evidencia compatible. La selección guarda una hipótesis; A/B y aplicación en escenarios continúan pendientes.
+- Holdout calculado: pérdida logarítmica 0,069705 frente a naive 0,070046; CTR observado 1,3089 %, modelo agregado 1,2489 %. Estado **limitado**. Solo 19,05 % de tasas de filas reservadas dentro de las bandas de parámetros; se explica que no son intervalos predictivos ni IC causales. No se oculta este diagnóstico ni se regenera el seed para mejorarlo.
+
+### Comandos y resultados ejecutados
+
+| Comando / comprobación | Resultado |
+|---|---|
+| `node scripts/generar_variantes.mjs` | Nueve SVG originales, productos propios reutilizados, licencia/procedencia registradas |
+| Alembic 0004 sobre principal y arranque vacío de QA | Dos tablas nuevas, sin borrar hechos; migraciones 0001–0004 correctas en la pila nueva |
+| pytest creativo | 12 passed, 1 warning en 2,41 s |
+| pytest completo con código montado | 73 passed, 1 warning en 22,92 s; Ruff correcto |
+| `docker compose -p margia-creatividad-qa up -d --build --wait --wait-timeout 180` | Build final correcto y tres servicios saludables en 127.0.0.1:3002 |
+| `npm.cmd run lint` / `typecheck` | Sin errores ni advertencias finales |
+| Playwright específico inicial | 4 passed (21,5 s), antes de los últimos ajustes visuales |
+| `MARGIA_QA_URL=…:3002 npm.cmd run test:e2e` (variable PowerShell) | Regresión completa final: 20 passed (2,2 min) |
+| Capturas/axe | Cuatro tamaños del pretest y comparadores de tres perfiles; regresión general de las siete rutas, sin infracciones axe detectadas ni desbordamiento global; revisión manual escritorio/móvil |
+| `tests/operacion.py preparar` → reinicio → `verificar` | Conserva hechos, MMM, Search/geo, modelo creativo con fecha original, pretest y selección exactos; sin reentrenar |
+| `tests/operacion.py reset` en QA | 42,154 s; mismo checksum, modelo reproducible, hipótesis de usuario eliminadas, evidencia inicial restaurada |
+| `docker compose up -d --build --wait --wait-timeout 180` | Principal actualizada conservando volumen; tres servicios saludables, solo localhost:3000 |
+| `./scripts/comprobar.ps1` contra imagen final principal | 73 passed, 1 warning en 25,94 s; Ruff y salud correctos |
+| `docker compose -p margia-creatividad-qa down` | Pila aislada detenida, volumen conservado; principal saludable |
+
+Comprobación final API principal: modelo `creatividad-bfce2ee924571d327baa`, nueve variantes disponibles, estado limitado. El checksum original sigue en `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. Ajuste creativo observado 1,043 s en la principal / 1,017 s en QA; muestras CPU, no benchmark general. Se mantienen avisos conocidos de httpx/TestClient y del entorno de color Playwright.
+
+Un rebuild intermedio falló con E/S de caché Turbopack y Docker se detuvo. Se recuperó reiniciando Desktop, con recuperación automática de PostgreSQL, y se retiraron por ID 37 entradas de caché regenerable de MARGIA del día (1,63 GB), sin eliminar volúmenes ni datos. Build, regresión y operación finales se repitieron correctamente. C: sigue con alrededor de 1,3 GiB libres: riesgo de entorno para futuras compilaciones; no se atribuye definitivamente la caída a esa condición. Detalle en [validacion.md](validacion.md).
+
+### Git y continuación
+
+- Backend probado: `e979811` — «feat: estimar CTR contextual y guardar hipótesis creativas trazables».
+- Interfaz/recursos probados: `fc5ce9b` — «feat: conectar biblioteca con pretest visual y selección persistente».
+- Fetch sin divergencias; push normal a `origin/main` correcto (`a957663..fc5ce9b`). `git ls-remote origin refs/heads/main` confirma `fc5ce9bb7987908ba71af9c84ed9505ffdac7dd7`. Sin force, cambio de remoto ni configuración global de identidad; cierre documental como commit separado.
+- **Días 1–3 y D4.1 verificados.** Siguiente: D4.2 A/B creativo aleatorio con denominadores, incertidumbre, coste, multiplicidad y actualización versionada; después D4.3 orquestador base/ahorro/reinversión y optimización factible. El reparto MMM continúa bloqueado por sensibilidad, sin relajar umbrales.
+- Día 5: CRUD de escenarios, ejecuciones/decisiones/exportaciones, incidencias/restauración y recorrido integrado. Día 6: congelación, regresión A01–A14, rendimiento, revisión visual, secretos/licencias y presentación. P1/P2 aplazados; no se declara completo el Día 4 ni la POC.
+- Método completo: [creatividad.md](creatividad.md). Modern Web Guidance `forms` aplicada con validación nativa/API, foco, textarea redimensionable y submit bloqueado solo durante POST real. Sin agentes/subagentes, datos reales, LLM, GPU ni dependencias de runtime nuevas.

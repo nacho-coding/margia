@@ -291,3 +291,56 @@ npm.cmd run test:e2e -- tests/geo.spec.ts
 - Modern Web Guidance `forms`: radios nativos con fieldset/legend para duraciones, controles con label y límites, validación adicional en API, error con foco y estado anunciado. He mantenido envío habilitado para mostrar errores y lo bloqueo solo durante POST válido (“DON'T disable submit buttons to block validation”). Fuente/licencia ya registrada, sin dependencias de runtime nuevas.
 
 Se mantiene el aviso heredado httpx/TestClient y el aviso de entorno `NO_COLOR`/`FORCE_COLOR` de Playwright. Sin nuevas dependencias, IA, GPU ni agentes. La optimización del reparto MMM sigue bloqueada; no se relajan umbrales para el siguiente orquestador. Método completo: [experimentos_geo.md](experimentos_geo.md).
+
+## 25/11/2026 · Biblioteca y pretest creativo contextual (D4.1)
+
+### Cálculo y API
+
+- Pruebas específicas nuevas: **12 passed, 1 warning en 2,41 s**. Batería completa con código montado: **73 passed, 1 warning en 22,92 s**. Verificador oficial contra la imagen final de producción, `./scripts/comprobar.ps1`: **73 passed, 1 warning en 25,94 s**, Ruff y salud correctos.
+- Validación de conteos binomiales y denominadores desiguales, disjunción de activos/campañas/fechas/IDs, alteración del holdout sin cambiar parámetros ni réplicas, reproducibilidad, bandas acotadas, advertencia de extrapolación y fallback al naive al bloquearse. Inputs inválidos, referencias CVR, escala de clics, tres variantes sin efecto identificado, ID/reutilización, selección ajena rechazada, historial y hechos sin cambios. Filtros, ordenación y vacío real.
+- Las fixtures de API creativa usan una transacción exterior y savepoints: los POST guardan de verdad dentro de ella y al salir se revierten. Las pruebas operativas de persistencia usan su pila aislada. No se mezclan escritores pytest/Playwright sobre la misma base.
+- Modelo `creatividad-bfce2ee924571d327baa`, `creatividad-1.0.0`, limitado. Ajuste observado 1,043 s en la principal y 1,017 s en la pila de QA; muestras locales CPU, no benchmark general. Particiones, métricas y baja fracción de tasas cubiertas por bandas de parámetros en [creatividad.md](creatividad.md).
+
+### Producción y operación aislada
+
+Pila nueva `margia-creatividad-qa` desde PostgreSQL vacío: migraciones 0001–0004, seed y tres modelos preparados. Actualización aditiva de la principal conservando el volumen y el checksum. Comandos ejecutados, desde la raíz:
+
+```powershell
+$env:MARGIA_PORT='3002'
+docker compose -p margia-creatividad-qa up -d --build --wait --wait-timeout 180
+docker compose -p margia-creatividad-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py preparar
+docker compose -p margia-creatividad-qa restart db backend
+docker compose -p margia-creatividad-qa up -d --wait --wait-timeout 120 db backend
+docker compose -p margia-creatividad-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py verificar
+docker compose -p margia-creatividad-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py reset
+$env:MARGIA_PORT='3000'
+docker compose up -d --build --wait --wait-timeout 180
+./scripts/comprobar.ps1
+```
+
+Reinicio conserva modelo creativo (incluida fecha de creación), parámetros/réplicas, pretest y selección exactos; también hechos, decisión fixture, MMM, geo y Search. Reset en QA: **42,154 s**, elimina evaluaciones/selecciones y reproduce el modelo excepto duración/fecha de ajuste. Mantiene el checksum original `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d` y restaura la evidencia Search inicial. La principal no se resetea.
+
+Al terminar se ejecuta `docker compose -p margia-creatividad-qa down`, sin `-v`. El volumen se conserva; `docker compose ps` confirma principal saludable y solo 127.0.0.1:3000 publicado. GET de contexto/pretest confirma checksum intacto, modelo creativo vigente y nueve variantes.
+
+### Interfaz y recursos
+
+```powershell
+node scripts/generar_variantes.mjs
+Set-Location frontend
+npm.cmd run lint
+npm.cmd run typecheck
+$env:MARGIA_QA_URL='http://127.0.0.1:3002'
+npm.cmd run test:e2e -- tests/creatividad.spec.ts
+npm.cmd run test:e2e
+```
+
+- Generadas nueve composiciones SVG locales con licencia/procedencia registrada, sin alterar las doce observadas. Lint/TypeScript finales correctos. Build Next.js final correcto en Docker para QA y principal.
+- Primer recorrido específico: **4 passed (21,5 s)**. Tras ajustes visuales, regresión completa final: **20 passed (2,2 min)**. Incluye todos los recorridos anteriores y formulario → cifras reales de API → selección → recarga, metodología/teclado, filtros/vacío, contexto global sin reentrenar, error/reintento con inputs y foco, validación nativa y extrapolación.
+- Capturas generales en 1440×900, 1920×1080, 1280×720 y 390×844, más pretest en los cuatro tamaños y comparadores moda/belleza. Axe sin infracciones en las combinaciones probadas, sin desbordamiento horizontal global. Inspección manual de pretest escritorio/móvil y recursos; el objetivo pasa a textarea para leerlo completo y los controles nuevos tienen al menos 48 px. No se declara auditoría humana de lector de pantalla.
+- Modern Web Guidance `forms`: he aplicado labels, validación nativa y API, textarea redimensionable, foco/estado y el criterio “DON'T disable submit buttons to block validation”; solo se bloquea durante POST real. Sin dependencias de runtime nuevas.
+
+### Incidencia de entorno y límites
+
+Un rebuild intermedio falló al sincronizar caché Turbopack (`I/O error`, `spawn EIO`), seguido de caída del motor Docker. C: tenía solo 1,47 GiB libres; no se establece una causalidad definitiva con ese espacio. Los intentos operativos mientras el motor estaba caído fallaron antes de ejecutar y no cuentan como pruebas. Se recuperó mediante `docker desktop restart --timeout 45`, con recuperación automática de PostgreSQL. Se inspeccionó `docker system df` y se eliminaron por ID únicamente 37 registros recuperables de compilación de MARGIA del día, 1,63 GB de caché regenerable; sin eliminar volúmenes, imágenes de usuario ni datos. Build y operación repetidos satisfactoriamente después. C: continúa con alrededor de 1,3 GiB libres: riesgo de entorno para compilaciones futuras, no resuelto por compactación ni borrados globales.
+
+Se conservan el warning conocido httpx/TestClient y el de entorno `NO_COLOR`/`FORCE_COLOR`. Predictor observacional limitado, CVR observado, composiciones empatadas por falta de identificación y multiplicador 1. A/B y efecto en escenarios pendientes. Sin agentes, LLM ni GPU.
