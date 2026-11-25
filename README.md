@@ -3,7 +3,7 @@
 
 MARGIA es una prueba de concepto avanzada de un gemelo digital comercial de marketing: conecta medición de medios, One Search (SEO + SEM), inteligencia creativa, experimentación y optimización económica sobre un único estado del negocio. El objetivo es decidir dónde invertir, dónde reducir inversión, cuándo experimentar y cómo aprender de los resultados.
 
-**Estado:** documentación inicial; aplicación aún no implementada. Objetivo de demostración: seis jornadas de desarrollo asistido por Codex, sujeto a pruebas y recorte de alcance si es necesario. No es una implantación productiva ni evidencia de resultados comerciales reales.
+**Estado:** primer incremento funcional del Día 1: aplicación de producción local con PostgreSQL, API, datos persistentes reproducibles, centro económico y vistas descriptivas. Modelos, simulación, experimentación y optimización continúan en desarrollo. No es una implantación productiva ni evidencia de resultados comerciales reales.
 
 ## Contrato de desarrollo
 
@@ -16,6 +16,10 @@ MARGIA es una prueba de concepto avanzada de un gemelo digital comercial de mark
 | [MODELOS_MATEMATICOS.md](MODELOS_MATEMATICOS.md) | Modelos, simulación, experimentación, incertidumbre y economía. |
 | [PLAN_DESARROLLO.md](PLAN_DESARROLLO.md) | Arquitectura, tareas, fases, pruebas, Git y entrega. |
 | [PROMPT_CODEX.md](PROMPT_CODEX.md) | Orden inicial para desarrollar el proyecto. |
+| [PRD.md](PRD.md) | Requisitos funcionales/no funcionales y aceptación de producto. |
+| [RFC.md](RFC.md) | Arquitectura objetivo y contratos de implementación. |
+| [Backlog](documentacion/backlog.md) | Seis jornadas con prioridades, criterios y estado. |
+| [Validación](documentacion/validacion.md) | Pruebas realmente ejecutadas, mediciones y límites. |
 
 ## Principios
 
@@ -31,4 +35,61 @@ MARGIA es una prueba de concepto avanzada de un gemelo digital comercial de mark
 
 Para obtener la documentación inicial: `git clone https://github.com/nacho-coding/margia.git`. Si ya existe una carpeta local vacía llamada margia, ejecutar desde ella `git clone https://github.com/nacho-coding/margia.git .`.
 
-La instalación y los comandos de arranque se documentarán aquí cuando Codex haya implementado y probado la aplicación. No se declaran disponibles todavía.
+## Arranque local en Windows
+
+Requisito: Docker Desktop iniciado con contenedores Linux y Docker Compose. El primer arranque descarga imágenes oficiales y paquetes; tras construir, la aplicación opera sin servicios externos. No necesitas Python, PostgreSQL ni Node instalados en Windows para utilizarla.
+
+Desde la raíz del proyecto, en PowerShell:
+
+```powershell
+./scripts/iniciar.ps1
+```
+
+El script crea `.env` con una contraseña aleatoria local si no existe, construye las imágenes y espera a que los tres servicios estén saludables. **Abrir [MARGIA local](http://localhost:3000).** Solo se publica `127.0.0.1:3000`; PostgreSQL y FastAPI se mantienen en redes de Docker.
+
+Parar conservando los datos y volver a arrancar sin recompilar:
+
+```powershell
+./scripts/detener.ps1
+./scripts/iniciar.ps1 -SinBuild
+```
+
+La inversión y las ventas no se regeneran al refrescar ni al reiniciar. Para reconstruir únicamente esta demo, incluidas sus decisiones:
+
+```powershell
+./scripts/reset_demo.ps1
+```
+
+Exige escribir `RESTABLECER DEMO`; `-Confirmar` sirve para pruebas operativas explícitas. No uses `down -v` como comando de parada: elimina persistencia. El puerto se puede configurar con `MARGIA_PORT` en `.env`; los scripts muestran/usan ese puerto. El cambio de corte requiere restablecer explícitamente el universo y no conserva decisiones previas: mantener el corte probado para esta entrega.
+
+## Qué se puede utilizar
+
+- Centro de decisiones: cinco KPIs desde PostgreSQL, comparación equivalente, serie diaria, detalle de definición, filtros de mercado/periodo y CSV.
+- Medición: gasto y atribución por plataforma, sin presentar conversiones solapadas como pedidos únicos.
+- One Search: consultas SEO/SEM, intención, orden, paginación y cobertura declarada; sin estimación de recuperación todavía.
+- Creatividad: 80 registros, 12 composiciones SVG originales, filtro por canal y detalle con CTR/CVR y denominadores.
+- Fiabilidad: cobertura, integridad de claves y margen; manifiesto y checksum. Configuración: reset explícito.
+- Laboratorios de experimentos y escenarios: rutas señaladas como en desarrollo. El radar económico y la aprobación de decisiones no están implementados.
+
+Universo: 247.562 registros, 24 mercados ficticios, 730 días de negocio y medios, corte fijo 31/10/2026, semilla 260725. Búsqueda cubre los últimos 28 días; campañas, siete; creatividad, 28 días con mercados parciales por activo. Todas las fuentes son sintéticas.
+
+## Verificación
+
+```powershell
+./scripts/comprobar.ps1
+```
+
+Ejecuta salud, pytest y Ruff dentro de Docker. Para las pruebas de frontend se necesita Node compatible (la imagen usa Node 24):
+
+```powershell
+Set-Location frontend
+npm.cmd ci
+npx.cmd playwright install chromium
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test:e2e
+```
+
+Las pruebas usan la aplicación Docker en `127.0.0.1:3000`. Capturas y reportes locales en `artifacts/qa`, excluidos de Git. Pruebas de este incremento, versiones, resultados, advertencias y cobertura: [validación](documentacion/validacion.md). El alcance pendiente permanece en el backlog; no se declara terminada la POC completa.
+
+Contratos disponibles: [OpenAPI](http://localhost:3000/api/openapi.json), [documentación de API](http://localhost:3000/api/documentacion). Procedencia/licencias: [recursos](documentacion/licencias.md). Arquitectura implementada: [arquitectura](documentacion/arquitectura.md).
