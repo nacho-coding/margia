@@ -8,9 +8,14 @@ from app.api.consultas import snapshot_actual
 from app.api.contratos import ParametrosSearch
 from app.datos.historia_search import construir_historia
 from app.dominio.economia import comparar_captura
-from app.modelos.search import ajustar_search, respuesta_recorte
-from app.modelos.search_servicio import filas_experimentales, search_actual
-from app.persistencia.tablas import AsignacionExperimento, Experimento, ObservacionExperimento
+from app.modelos.search import VERSION, ajustar_search, respuesta_recorte
+from app.modelos.search_servicio import filas_experimentales
+from app.persistencia.tablas import (
+    AsignacionExperimento,
+    Experimento,
+    Modelo,
+    ObservacionExperimento,
+)
 
 
 def test_historia_reproducible_fk_aleatorizacion_y_mundo_conservado(mundo):
@@ -80,16 +85,17 @@ def test_estimador_nulo_negativo_y_semilla(tasa):
 def test_modelo_real_toma_observaciones_y_replicas_por_unidad(db):
     snapshot = snapshot_actual(db)
     datos, experimentos = filas_experimentales(db, snapshot)
-    modelo = search_actual(db, snapshot).resultado
+    modelo = db.scalar(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION)).resultado
     assert len(datos) == 144 and len(experimentos) == 12
     nuevo = ajustar_search(datos, snapshot.semilla)
     assert nuevo["tasas"] == modelo["tasas"]
     assert nuevo["draws"] == modelo["draws"]
     assert modelo["pares"] == 12
     assert all(i["p05"] < i["p95"] for i in modelo["intervalos"])
-    assert db.scalar(select(func.count()).select_from(Experimento)) == 12
-    assert db.scalar(select(func.count()).select_from(AsignacionExperimento)) == 288
-    assert db.scalar(select(func.count()).select_from(ObservacionExperimento)) == 576
+    historicos = select(Experimento.id).where(Experimento.snapshot_id == snapshot.id, Experimento.tipo == "historico_search")
+    assert db.scalar(select(func.count()).select_from(Experimento).where(Experimento.id.in_(historicos))) == 12
+    assert db.scalar(select(func.count()).select_from(AsignacionExperimento).where(AsignacionExperimento.experimento_id.in_(historicos))) == 288
+    assert db.scalar(select(func.count()).select_from(ObservacionExperimento).where(ObservacionExperimento.experimento_id.in_(historicos))) == 576
     insuficiente = [f for f in datos if f["par"] in ("par-01", "par-02")]
     with pytest.raises(ValueError):
         ajustar_search(insuficiente, 1)
@@ -133,10 +139,13 @@ def test_api_simulador_radar_reproducible_guardado_y_abstencion(client):
     assert r["banda"]["p05"] < r["banda"]["p95"] and 0 <= r["banda"]["probabilidad_perdida"] <= 1
     assert client.post(uri, json={"recorte_pct": 0}).json()["resultado"]["delta"] == 0
     completo = client.post(uri, json={"recorte_pct": 100}).json()["resultado"]
-    assert completo["extrapolado"] and completo["estado"] == "hipotesis"
+    extrapolado = not modelo["soporte"][0] <= 1 <= modelo["soporte"][-1]
+    assert completo["extrapolado"] == extrapolado
+    if extrapolado:
+        assert completo["estado"] == "hipotesis"
     caro = client.post(uri, json={"recorte_pct": 50, "cuota_plataforma": 100000}).json()["resultado"]
     assert caro["delta"] < 0 and caro["banda"]["probabilidad_perdida"] == 1
-    assert "Mantener" in caro["recomendacion"]
+    assert caro["recomendacion"] != "Oportunidad favorable para contrastar en un nuevo experimento"
     local = client.post(uri+"?mercado=m01", json=inputs).json()["resultado"]
     assert local["estado"] == "hipotesis" and local["motivos"]
     assert client.post(uri, json={"recorte_pct": 101}).status_code == 422

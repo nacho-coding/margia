@@ -13,6 +13,7 @@ from sqlalchemy import func, select
 from app.main import app
 from app.modelos.mmm import VERSION
 from app.modelos.search import VERSION as VERSION_SEARCH
+from app.modelos.search_servicio import search_actual
 from app.persistencia.db import SessionLocal
 from app.persistencia.tablas import Decision, Modelo, NegocioDiario, Snapshot
 
@@ -33,13 +34,24 @@ with SessionLocal.begin() as db:
                         motivo="Fixture explícita para verificar persistencia, no decisión de negocio.",
                         evidencia={"tipo": "Fixture de prueba operativa"}))
         simulacion = client.post("/api/v1/busqueda/simular", json={"recorte_pct": 50, "cuota_plataforma": 6000}).json()
+        geo = client.post("/api/v1/experimentos/disenar", json={"nombre": "Fixture operativa geo de persistencia"}).json()
+        uri = "/api/v1/experimentos/"+geo["id"]
+        assert client.post(uri+"/ejecutar", json={}).status_code == 200
+        evaluado = client.post(uri+"/evaluar", json={})
+        assert evaluado.status_code == 200 and evaluado.json()["protocolo"]["evaluacion"]["compatible"]
+        aceptado = client.post(uri+"/aceptar", json={})
+        assert aceptado.status_code == 200, aceptado.text
+        geo = {**aceptado.json(), "reutilizada": False}
+        vigente = search_actual(db, snapshot)
         expected.write_text(json.dumps({"checksum": snapshot.checksum,
                                         "conteos": snapshot.manifiesto["conteos"],
                                         "modelo": modelo_reproducible,
                                         "modelo_creado": modelo.creado.isoformat(),
                                         "search": search.resultado,
-                                        "simulacion": simulacion}), encoding="utf-8")
-        print("Fixture de persistencia y MMM preparados en PostgreSQL de validación.")
+                                        "simulacion": simulacion, "geo": geo,
+                                        "search_vigente": vigente.resultado,
+                                        "search_vigente_creado": vigente.creado.isoformat()}), encoding="utf-8")
+        print("Fixtures de persistencia, MMM, geo y versión Search preparados en PostgreSQL de validación.")
     elif action == "verificar":
         assert db.get(Decision, "qa-persistencia") is not None
         assert snapshot.checksum == json.loads(expected.read_text())["checksum"]
@@ -49,7 +61,12 @@ with SessionLocal.begin() as db:
         assert search.resultado == json.loads(expected.read_text())["search"]
         guardada = json.loads(expected.read_text())["simulacion"]
         assert client.get("/api/v1/busqueda/simulaciones/"+guardada["id"]).json()["resultado"] == guardada["resultado"]
-        print("Reinicio: decisión, checksum, negocio y artefacto MMM conservados sin reentrenar.")
+        geo = json.loads(expected.read_text())["geo"]
+        assert client.get("/api/v1/experimentos/"+geo["id"]).json() == geo
+        vigente = search_actual(db, snapshot)
+        assert vigente.resultado == json.loads(expected.read_text())["search_vigente"]
+        assert vigente.creado.isoformat() == json.loads(expected.read_text())["search_vigente_creado"]
+        print("Reinicio: decisión, hechos, MMM, geo/evaluación y evidencia Search vigente conservados sin reejecución.")
     elif action == "reset":
         before = snapshot.checksum
         assert client.post("/api/v1/demo/reset", json={"confirmacion": "NO"}).status_code == 422
@@ -66,6 +83,10 @@ with SessionLocal.begin() as db:
             assert search_nuevo.resultado == search.resultado
         guardada = json.loads(expected.read_text())["simulacion"]
         assert client.get("/api/v1/busqueda/simulaciones/"+guardada["id"]).status_code == 404
+        geo = json.loads(expected.read_text())["geo"]
+        assert client.get("/api/v1/experimentos/"+geo["id"]).status_code == 404
+        assert client.get("/api/v1/busqueda/evidencia").json()["modelo"]["id"] == search.id
+        assert len(client.get("/api/v1/experimentos").json()["filas"]) == 12
         assert client.get("/api/v1/modelos/mmm").status_code == 200
         print(json.dumps({"reinicio": "correcto", "reset": result.json()}, ensure_ascii=False))
     else:

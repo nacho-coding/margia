@@ -34,6 +34,7 @@ from app.api.contratos import (
     SimulacionSearchRespuesta,
     TablaDatos,
 )
+from app.api.geo_rutas import router as geo_router
 from app.datos.generador import generar
 from app.datos.historia_search import asegurar_historia
 from app.dominio.economia import cociente
@@ -70,6 +71,7 @@ from app.persistencia.tablas import (
 app = FastAPI(title="MARGIA · API de la demo sintética", version="0.1.0",
               description="Datos 100 % sintéticos. Sin activación de publicidad real.",
               docs_url="/api/documentacion", openapi_url="/api/openapi.json", redoc_url=None)
+app.include_router(geo_router)
 
 
 @app.exception_handler(SQLAlchemyError)

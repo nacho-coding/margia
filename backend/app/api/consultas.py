@@ -79,7 +79,7 @@ def contexto(db: Session) -> Contexto:
                     manifiesto=snapshot.manifiesto,
                     modulos={"centro": "Datos observados y radar de marca", "medicion": "MMM nacional validado temporalmente y atribución descriptiva",
                              "one-search": "Evidencia histórica y simulador económico de marca", "creatividad": "Biblioteca observada; pretest pendiente",
-                             "experimentos": "En desarrollo · Día 3", "escenarios": "En desarrollo · Día 4",
+                             "experimentos": "Diseño geo, ejecución sintética, evaluación y valor de información", "escenarios": "En desarrollo · Día 4",
                              "fiabilidad": "Integridad de fuentes; incidencias alternativas pendientes"})
 
 
@@ -183,6 +183,21 @@ def fiabilidad(db: Session) -> Fiabilidad:
         if not completo:
             bloqueado = True
             incidencias.append(dict(causa="Faltan observaciones experimentales Search", accion="Restablecer la evidencia antes de evaluar marca."))
+        # Importación local: la consulta común no depende del orquestador experimental.
+        from app.modelos.search_servicio import search_actual
+        vigente = search_actual(db, snapshot)
+        if vigente.id != search.id:
+            eid = vigente.resultado["experimento_actual"]
+            filas_geo = db.scalar(select(func.count()).select_from(ObservacionExperimento)
+                                  .where(ObservacionExperimento.experimento_id == eid))
+            completa_geo = filas_geo == vigente.resultado["pares"]*4
+            fuentes.append(dict(id="evidencia_geo", nombre="Evidencia geográfica vigente", filas=filas_geo,
+                dias=28, cobertura="Prueba sintética nueva aceptada; sustituye históricos en la intensidad ejecutada",
+                estado="limitado" if completa_geo else "bloqueado"))
+            diagnostico += f" Vigente {vigente.version}: {vigente.resultado['estado']}; sustituye la evidencia anterior, sin acumular ramas dependientes."
+            if not completa_geo:
+                bloqueado = True
+                incidencias.append(dict(causa="Evidencia geográfica vigente incompleta", accion="Restaurar observaciones antes de evaluar marca."))
     return Fiabilidad(snapshot=snapshot.id, estado="bloqueado" if bloqueado else "limitado", fuentes=fuentes,
                        reglas=reglas, incidencias=incidencias, checksum=snapshot.checksum,
                        diagnostico_modelos=diagnostico + " La cobertura parcial limita las fuentes indicadas.")

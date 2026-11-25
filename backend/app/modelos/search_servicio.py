@@ -8,6 +8,7 @@ from sqlalchemy import func, select, text
 
 from app.api.consultas import fiabilidad, totales
 from app.dominio.economia import comparar_captura
+from app.modelos.geo import VERSION_SEARCH_GEO
 from app.modelos.search import VERSION, ajustar_search, respuesta_recorte
 from app.persistencia.tablas import (
     AsignacionExperimento as A,
@@ -73,10 +74,13 @@ def asegurar_search(db, snapshot):
 
 
 def search_actual(db, snapshot):
-    modelo = db.scalar(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION))
-    if not modelo:
+    modelos = db.scalars(select(Modelo).where(Modelo.snapshot_id == snapshot.id,
+        Modelo.version.in_([VERSION, VERSION_SEARCH_GEO]))).all()
+    sustituidos = {m.resultado.get("modelo_anterior") for m in modelos}
+    vigentes = [m for m in modelos if m.id not in sustituidos]
+    if len(vigentes) != 1:
         raise HTTPException(503, "La evidencia histórica Search todavía no está preparada. Revisa el arranque y reintenta.")
-    return modelo
+    return vigentes[0]
 
 
 def evidencia(db, filtro):
@@ -137,14 +141,14 @@ def evaluar_search(db, filtro, entrada):
     else:
         recomendacion = "Oportunidad favorable para contrastar en un nuevo experimento"
     return dict(periodo=filtro.periodo().model_dump(mode="json"), modelo=modelo.id, version=m["version"],
-        hipotesis=m["hipotesis"], semilla=m["semilla"], evidencia="Estimación desde históricos experimentales sintéticos",
+        hipotesis=m["hipotesis"], semilla=m["semilla"], evidencia=m.get("origen", "Estimación desde históricos experimentales sintéticos"),
         entradas=entrada.model_dump(), recuperacion=None, tasa_pedidos_por_euro=tasa,
         inversion_marca=gasto, extrapolado=extrapolado, motivos=motivos,
         estado="bloqueado" if m["estado"] == "bloqueado" or fiabilidad(db).estado == "bloqueado" else "hipotesis" if motivos else "evaluado",
         recomendacion=recomendacion, **resultado,
         banda=dict(p05=float(p05), p50=float(p50), p95=float(p95), probabilidad_perdida=riesgo,
             delta_pedidos_p05=float(np.quantile(pedidos, .05)), delta_pedidos_p95=float(np.quantile(pedidos, .95)),
-            replicas=m["replicas"], metodo="Bootstrap por par; base, margen por pedido y transporte temporal fijos"),
+            replicas=m["replicas"], metodo=("Draws t del efecto por pares" if m["version"] == VERSION_SEARCH_GEO else "Bootstrap por par")+"; base, margen por pedido y transporte temporal fijos"),
         advertencias=m["advertencias"]+["Contrafactual del periodo observado, no predicción de un futuro desconocido.",
             "Contribución incremental neta condicionada a evidencia y supuestos; no activa publicidad."])
 
