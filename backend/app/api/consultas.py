@@ -78,7 +78,7 @@ def contexto(db: Session) -> Contexto:
                     mercados=[{"id": m.id, "nombre": m.nombre} for m in mercados],
                     manifiesto=snapshot.manifiesto,
                     modulos={"centro": "Datos observados y radar de marca", "medicion": "MMM nacional validado temporalmente y atribución descriptiva",
-                             "one-search": "Evidencia histórica y simulador económico de marca", "creatividad": "Biblioteca, CTR contextual, pretest y selección de hipótesis",
+                             "one-search": "Evidencia histórica y simulador económico de marca", "creatividad": "Biblioteca, pretest, A/B aleatorio y aprendizaje de CTR por contexto",
                              "experimentos": "Diseño geo, ejecución sintética, evaluación y valor de información", "escenarios": "En desarrollo · Día 4",
                              "fiabilidad": "Integridad de fuentes; incidencias alternativas pendientes"})
 
@@ -202,6 +202,10 @@ def fiabilidad(db: Session) -> Fiabilidad:
     creativo = db.scalar(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION_CREATIVIDAD))
     if creativo:
         diagnostico += f" {creativo.version}: {creativo.resultado['estado']}; CTR contextual, sin efecto visual causal identificado."
+    from app.modelos.ab import VERSION_AB
+    aprendizajes = db.scalar(select(func.count()).select_from(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION_AB))
+    if aprendizajes:
+        diagnostico += f" {aprendizajes} versiones A/B creativas conservadas: aprendizaje CTR por contexto, sin efecto económico identificado."
     return Fiabilidad(snapshot=snapshot.id, estado="bloqueado" if bloqueado else "limitado", fuentes=fuentes,
                        reglas=reglas, incidencias=incidencias, checksum=snapshot.checksum,
                        diagnostico_modelos=diagnostico + " La cobertura parcial limita las fuentes indicadas.")

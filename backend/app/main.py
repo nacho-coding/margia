@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import case, delete, func, insert, select, text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api.ab_rutas import router as ab_router
 from app.api.consultas import (
     Db,
     FiltroAPI,
@@ -76,6 +77,7 @@ app = FastAPI(title="MARGIA · API de la demo sintética", version="0.1.0",
               docs_url="/api/documentacion", openapi_url="/api/openapi.json", redoc_url=None)
 app.include_router(geo_router)
 app.include_router(creatividad_router)
+app.include_router(ab_router)
 
 
 @app.exception_handler(SQLAlchemyError)

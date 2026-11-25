@@ -12,6 +12,7 @@ from sqlalchemy import func, select
 
 from app.creatividad.servicio import actual as creatividad_actual
 from app.main import app
+from app.modelos.ab import VERSION_AB
 from app.modelos.mmm import VERSION
 from app.modelos.search import VERSION as VERSION_SEARCH
 from app.modelos.search_servicio import search_actual
@@ -52,6 +53,17 @@ with SessionLocal.begin() as db:
         seleccion = client.post("/api/v1/creativos/selecciones", json={"pretest_id": pretest["id"], "variante_id": pretest["variantes"][0]["id"]})
         assert seleccion.status_code == 200, seleccion.text
         seleccion = {**seleccion.json(), "reutilizada": True}
+        ab = client.post("/api/v1/creativos/pruebas/disenar", json={"pretest_id": pretest["id"],
+            "control": pretest["variantes"][0]["id"], "tratamientos": [v["id"] for v in pretest["variantes"][1:]],
+            "nombre": "Fixture operativa A/B de persistencia"})
+        assert ab.status_code == 200, ab.text
+        ab_uri = "/api/v1/creativos/pruebas/"+ab.json()["id"]
+        assert client.post(ab_uri+"/ejecutar", json={}).status_code == 200
+        assert client.post(ab_uri+"/evaluar", json={}).status_code == 200
+        ab = client.post(ab_uri+"/aceptar", json={})
+        assert ab.status_code == 200, ab.text
+        ab = {**ab.json(), "reutilizada": False}
+        modelo_ab = db.get(Modelo, ab["protocolo"]["actualizacion"]["modelo"])
         expected.write_text(json.dumps({"checksum": snapshot.checksum,
                                         "conteos": snapshot.manifiesto["conteos"],
                                         "modelo": modelo_reproducible,
@@ -61,8 +73,9 @@ with SessionLocal.begin() as db:
                                         "search_vigente": vigente.resultado,
                                         "search_vigente_creado": vigente.creado.isoformat(),
                                         "creatividad": creativo_reproducible, "creatividad_creado": creativo.creado.isoformat(),
-                                        "pretest": pretest, "seleccion_creativa": seleccion}), encoding="utf-8")
-        print("Fixtures de persistencia, MMM, geo, Search y creatividad preparadas en PostgreSQL de validación.")
+                                        "pretest": pretest, "seleccion_creativa": seleccion, "ab_creativo": ab,
+                                        "modelo_ab": modelo_ab.resultado, "modelo_ab_creado": modelo_ab.creado.isoformat()}), encoding="utf-8")
+        print("Fixtures de persistencia, MMM, geo, Search, creatividad y A/B preparadas en PostgreSQL de validación.")
     elif action == "verificar":
         assert db.get(Decision, "qa-persistencia") is not None
         assert snapshot.checksum == json.loads(expected.read_text())["checksum"]
@@ -82,7 +95,11 @@ with SessionLocal.begin() as db:
         assert creativo.creado.isoformat() == datos["creatividad_creado"]
         assert client.get("/api/v1/creativos/evaluaciones/"+datos["pretest"]["id"]).json() == datos["pretest"]
         assert client.get("/api/v1/creativos/selecciones/"+datos["seleccion_creativa"]["id"]).json() == datos["seleccion_creativa"]
-        print("Reinicio: hechos, MMM, geo, Search, modelo creativo, pretest y selección conservados sin reentrenar ni reejecutar.")
+        assert client.get("/api/v1/creativos/pruebas/"+datos["ab_creativo"]["id"]).json() == datos["ab_creativo"]
+        modelo_ab = db.get(Modelo, datos["ab_creativo"]["protocolo"]["actualizacion"]["modelo"])
+        assert modelo_ab.resultado == datos["modelo_ab"]
+        assert modelo_ab.creado.isoformat() == datos["modelo_ab_creado"]
+        print("Reinicio: hechos, MMM, geo, Search, pretest, selección, protocolo/observaciones A/B y aprendizaje conservados sin reentrenar ni reejecutar.")
     elif action == "reset":
         before = snapshot.checksum
         assert client.post("/api/v1/demo/reset", json={"confirmacion": "NO"}).status_code == 422
@@ -107,10 +124,13 @@ with SessionLocal.begin() as db:
         assert client.get("/api/v1/creativos/evaluaciones/"+datos["pretest"]["id"]).status_code == 404
         assert client.get("/api/v1/creativos/selecciones/"+datos["seleccion_creativa"]["id"]).status_code == 404
         assert client.get("/api/v1/creativos/historial").json()["filas"] == []
+        assert client.get("/api/v1/creativos/pruebas/"+datos["ab_creativo"]["id"]).status_code == 404
+        assert client.get("/api/v1/creativos/pruebas").json()["filas"] == []
         with SessionLocal() as despues:
             actual_creativo = creatividad_actual(despues, snapshot)
             assert {k: v for k, v in actual_creativo.resultado.items() if k != "segundos_ajuste"} == creativo_reproducible
             assert actual_creativo.creado != creativo.creado
+            assert despues.scalar(select(func.count()).select_from(Modelo).where(Modelo.version == VERSION_AB)) == 0
         assert client.get("/api/v1/modelos/mmm").status_code == 200
         print(json.dumps({"reinicio": "correcto", "reset": result.json()}, ensure_ascii=False))
     else:

@@ -50,7 +50,8 @@ def cargar_series(db, snapshot, mercados, pre_dias):
 def catalogo(db):
     snapshot = snapshot_actual(db)
     modelo = search_actual(db, snapshot)
-    filas = db.scalars(select(Experimento).where(Experimento.snapshot_id == snapshot.id)
+    filas = db.scalars(select(Experimento).where(Experimento.snapshot_id == snapshot.id,
+                       Experimento.tipo.in_(["historico_search", "geo_search"]))
                        .order_by(Experimento.inicio_post.desc(), Experimento.id)).all()
     return dict(filas=[dict(id=e.id, nombre=e.protocolo.get("entradas", {}).get("nombre", "Histórico de arranque"),
         tipo=e.tipo, estado=e.estado, origen=e.origen, recorte=e.recorte, inicio=e.inicio_post.isoformat(),
@@ -62,7 +63,7 @@ def catalogo(db):
 
 def detalle(db, eid, reutilizada=False):
     e = db.get(Experimento, eid)
-    if not e or e.snapshot_id != snapshot_actual(db).id:
+    if not e or e.snapshot_id != snapshot_actual(db).id or e.tipo not in ("historico_search", "geo_search"):
         raise HTTPException(404, "El experimento no pertenece al snapshot activo.")
     asignaciones = db.scalars(select(A).where(A.experimento_id == eid).order_by(A.par_id, A.brazo)).all()
     obs = db.scalars(select(O).where(O.experimento_id == eid).order_by(O.mercado_id, O.periodo)).all()

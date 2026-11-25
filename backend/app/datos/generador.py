@@ -12,6 +12,7 @@ from datetime import date, timedelta
 import numpy as np
 
 from app.datos.captura import estructura_mercados, probabilidades_captura
+from app.datos.respuesta_creativa import CVR, ctr_base
 
 VERSION = "mundo-1.0.0"
 SEMILLA = 260725
@@ -172,11 +173,11 @@ def generar(semilla: int = SEMILLA, corte: date = CORTE) -> Mundo:
                 j = 2+i%4
                 asignado = int(gasto[t, m, j] // 25)
                 exposiciones = max(100, int(asignado/100*170))
-                ctr = .012 + .002*(i%3-1) + .0015*promocion[t]
+                ctr = ctr_base(i, promocion[t])
                 clics = int(creativo_rng.binomial(exposiciones, ctr))
                 creatividad.append(dict(snapshot_id=snapshot, fecha=fecha, mercado_id=mercados[m]["id"],
                                         creativo_id=creativo["id"], impresiones=exposiciones, clics=clics,
-                                        conversiones=int(creativo_rng.binomial(clics, .035)),
+                                        conversiones=int(creativo_rng.binomial(clics, CVR)),
                                         gasto_cent=asignado, frecuencia=round(float(creativo_rng.uniform(1.2, 4.5)), 2)))
 
     tablas = dict(mercado=mercados, canal=canales, campana=campanas, creativo=creativos,
