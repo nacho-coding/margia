@@ -40,7 +40,7 @@ test("radar → hipótesis Search → recorte, costes, no actuar y guardado",asy
 test("Search: históricos consultables, teclado, contexto y mercado como hipótesis",async({page})=>{
   await page.goto("/one-search");
   await page.getByRole("button",{name:"Revisar evidencia de marca",exact:true}).click();
-  await expect(page.getByRole("dialog")).toContainText("No se identifica recuperación");
+  await expect(page.getByRole("dialog")).toContainText("La tasa de recuperación SEO/directo no está identificada");
   await page.locator(".historical-button").first().click();
   await expect(page.getByRole("region",{name:"Observaciones del experimento",exact:true}).getByRole("row")).toHaveCount(49);
   await page.keyboard.press("Escape");
