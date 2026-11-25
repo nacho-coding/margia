@@ -38,4 +38,8 @@ Migración 0003: `experimento`, `asignacion_experimento`, `observacion_experimen
 - `GET /api/v1/busqueda/simulaciones/{id}`: resultado guardado, sin recalcular.
 - `GET /api/v1/oportunidades`: radar calculado con el contexto, sin crear ejecuciones.
 
-La misma evaluación produce el mismo ID; si ya existe se indica reutilización, sin presentarla como ejecución nueva. Reset explícito elimina evaluaciones de usuario y reconstruye evidencias/modelos reproducibles dentro de la transacción. Los nuevos experimentos del usuario y actualización de evidencia pertenecen al siguiente hito D3.2; las fixtures no se hacen pasar por ese trabajo.
+La misma evaluación produce el mismo ID; si ya existe se indica reutilización, sin presentarla como ejecución nueva. Reset explícito elimina evaluaciones de usuario y reconstruye evidencias/modelos reproducibles dentro de la transacción.
+
+## Evidencia nueva del laboratorio geográfico
+
+El laboratorio permite diseñar, ejecutar, evaluar y aceptar pruebas nuevas. Una evaluación compatible sustituye la evidencia mediante `search-geo-1.0.0`, conservando versiones y evaluaciones previas. El soporte pasa a ser únicamente la intensidad ejecutada; no se conserva artificialmente la recomendación entre 25 y 75 % de los históricos sustituidos. Las bandas usan draws t del efecto por pares y se identifican en la API. El origen vigente se muestra en One Search y el radar utiliza esa misma versión. La recuperación SEO/directo sigue sin identificarse. Método, supuestos, guardrails, valor de información y límites: [experimentos_geo.md](experimentos_geo.md).

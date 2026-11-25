@@ -169,3 +169,49 @@ El checksum original sigue exactamente en `6715a0eb83a485c083b145e237a124a5923da
 - Acceso `ignaciofontal` efectivo y 403 resuelto. Siete commits previos y los dos nuevos de código publicados con push normal a `origin/main` (`ea9a8ab..c9fd02d`), sin cambiar remoto ni forzar historia. `git ls-remote origin refs/heads/main` verifica `c9fd02d5761d10eb2d2f93d6123fc0b3e911d503`. El cierre documental se confirma y publica como commit separado.
 - **No queda D2.3 pendiente. Días 1 y 2 cerrados; D3.1 disponible.** Siguiente hito del plan: D3.2, nuevos experimentos geográficos con diseño, ejecución y actualización de evidencia, seguido de D3.3/valor de información. No se confunden las fixtures de arranque con esas funciones futuras ni se declara terminada la POC completa.
 - Método y límites: [one_search.md](one_search.md). Pruebas y advertencias: [validacion.md](validacion.md). Permanece la deprecación conocida de httpx/TestClient. Sin agentes, LLM, GPU, dependencias nuevas ni datos reales.
+
+## 25/11/2026 · Inicio de experimentación y valor de información (D3.2–D3.3)
+
+- Inspección: `main...origin/main`, limpio, HEAD `575826c`, origin correcto y `git fetch origin main` sin divergencias; tres servicios Docker saludables. Releídos los seis contratos, AGENTS, avances, backlog, arquitectura y decisiones. Trabajo secuencial sin agentes.
+- Tareas: diseño geo con preperiodo, parejas y asignación reproducible; MDE y equilibrio; nuevas observaciones sintéticas posteriores al corte; evaluación por pares, guardrails y actualización versionada Search por sustitución; valor de información con costes y horizonte explícitos; interfaz y navegación desde Search.
+- Pruebas previstas: nulo/negativo, semilla, unidades aleatorizadas, ausencia de verdad/futuro en estimador, estados/idempotencia, abstención, sustitución sin acumular ramas dependientes, EVSI/EVPI y prueba cara; regresión pytest/Ruff, lint/TypeScript/build, Playwright/axe/capturas, arranque vacío/reinicio/reset aislados. No se declaran ejecutadas todavía.
+- Modern Web Guidance: consultada guía `forms`; sin dependencias nuevas. Fuentes matemáticas primarias: NIST (comparaciones pareadas) y SciPy (cuadratura normal).
+
+## 25/11/2026 · Día 3 cerrado: geo y valor de información verificados
+
+### Implementado
+
+- Laboratorio funcional desde One Search: objetivo/hipótesis, pedidos como KPI, selección de mercados, preperiodo, duración, recorte, coste, cuota, riesgo y semilla. Emparejamiento por volumen/tendencia/variabilidad, asignación 0,5 dentro de par, equilibrio, placebo, calendario y MDE. Aviso cuando el efecto de referencia queda por debajo del MDE y supuestos de spillover explícitos.
+- Ejecución real del mundo sintético en rama posterior al corte, separada del negocio. Guarda asignaciones y observaciones nuevas pre/post. El estimador no lee verdad ni futuro: compara pares, normaliza tamaños y calcula efecto/IC con el par como unidad.
+- Evaluación y abstención con guardrails; aceptación explícita crea versión Search o reutiliza evidencia idéntica, sin pooling de ramas dependientes. Cadena de versiones persistente; diseños obsoletos no sobrescriben el vigente. Evaluaciones antiguas y modelos anteriores conservados. Fiabilidad bloquea si falta evidencia vigente.
+- EVPI/EVSI para mantener/recortar, likelihood normal ligado al MDE, coste de prueba y oportunidad de esperar en un horizonte comparable. `geo-1.0.1` conserva las 400 réplicas, incluidas colas raras, tras detectar que 40 cuantiles podían ocultarlas. No se obliga a que experimentar compense. Reinversión sigue en D4.
+- Interfaz adaptable, validación/error/reintento/foco, historial con origen, tablas de observaciones, gráfico de efecto e IC y pre/post/contrafactual. Backend calcula todas las cifras; frontend presenta. Sin nuevos servicios, migraciones innecesarias, IA ni dependencias.
+
+### Comandos y resultados ejecutados
+
+| Comando / comprobación | Resultado |
+|---|---|
+| `docker compose up -d --build --wait --wait-timeout 180` | Build de producción y tres servicios saludables, solo localhost |
+| `./scripts/comprobar.ps1` | 61 passed, 1 warning en 25,39 s; salud y Ruff correctos |
+| pytest completo con código final y prior completo | 61 passed, 1 warning en 22,07 s; Ruff correcto |
+| pytest completo con evidencia geo aceptada | 61 passed, 1 warning en 19,54 s, antes del ajuste de prior; regresión de estado posterior a uso |
+| `npm.cmd run lint` / `typecheck` | Sin errores ni advertencias finales |
+| `MARGIA_QA_URL=…:3002 npm.cmd run test:e2e` (variable de PowerShell) | 16 passed (2,0 min) en la pila aislada |
+| `npm.cmd run test:e2e -- tests/geo.spec.ts` tras geo-1.0.1 | 3 passed (27,2 s), capturas y axe repetidos |
+| pytest geo de la imagen final, secuencial | 22 passed, 1 warning en 5,90 s |
+| Capturas / revisión | 28 vistas generales y resultados en cuatro tamaños; cero infracciones axe detectadas, sin desbordamiento global; inspección manual |
+| Pila nueva `margia-geo-qa` | Arranque desde PostgreSQL vacío, migraciones 0001–0003 y seed/modelos preparados |
+| `tests/operacion.py preparar/verificar` tras reinicio | Conserva hechos, decisión fixture, MMM, modelos/evaluaciones Search y protocolo/observaciones/evaluación geo; sin reejecutar |
+| `tests/operacion.py reset` aislado | 41,342 s; mismo checksum, elimina ramas de usuario y restaura Search original |
+| `docker compose -p margia-geo-qa down` | Pila temporal detenida, volumen conservado; demo principal saludable en localhost:3000 |
+| Diseño + guardado con 400 estados, muestra CPU | 0,651 s; EVPI 38,3356 €, EVSI 0,5434 €, corrección de límites 0 €; no benchmark general |
+
+Checksum del negocio intacto: `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. Pruebas nulas, adversas, evidencia escasa, costes altos, copias idénticas y versiones obsoletas cubiertas. Se mantienen resultados negativos y bandas amplias. Fallos iniciales y correcciones, incluida interferencia entre dos comprobaciones de QA repetida secuencialmente, documentados en [validacion.md](validacion.md); no se cuentan como pruebas satisfactorias.
+
+### Git, límites y siguiente fase
+
+- Backend probado: `6727ac5` — «feat: ejecutar experimentos geo y valorar información con evidencia versionada»; corrección de colas y riesgo: `55ffc1c` — «fix: conservar colas de incertidumbre en el valor de información»; interfaz: `8d21059` — «feat: conectar laboratorio geo con Search y revisión visual accesible». Se conserva identidad temporal Codex, sin cambiar configuración global.
+- `git fetch origin main` sin divergencias. Push normal de los tres hitos correcto: `575826c..8d21059`. `git ls-remote origin refs/heads/main` confirma `8d21059c94eeeb274da388e1c98f6dd04097358a`. Origin se mantiene en `https://github.com/nacho-coding/margia.git`, sin force ni cambios ajenos. El cierre documental se confirma y publica como commit separado.
+- **Días 1–3 cerrados.** Siguiente: D4.1, modelo creativo ligero, tres variantes y brief por reglas; después A/B y orquestador/optimización. Día 5: CRUD de escenarios, decisiones/exportación e incidencias/restauración; Día 6: congelación, regresión final, rendimiento, auditoría y presentación. P1/P2 continúan aplazados.
+- El reparto MMM permanece bloqueado por sensibilidad: el futuro orquestador debe respetarlo o aportar calibración compatible, sin relajar umbrales. EVSI es aproximado y depende del likelihood; no se promete potencia real ni independencia entre ramas sintéticas. La aprobación de medios y la POC completa siguen pendientes.
+- Método y límites en [experimentos_geo.md](experimentos_geo.md). Sin agentes/subagentes, datos reales, LLM, GPU ni servicios externos de runtime.

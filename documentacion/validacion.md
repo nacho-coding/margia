@@ -224,3 +224,70 @@ docker compose -p margia-search-qa down
 Pila nueva desde PostgreSQL vacío, migraciones 0001–0003, seed, MMM e históricos/Search correctos. Reinicio conserva decisión fixture, hechos, MMM, modelo Search y evaluación guardada exactos. Reset reconstruye mismos hechos y ambos modelos (MMM salvo duración), elimina evaluación y fixture; **52,718 s**. Pila aislada detenida conservando volumen; demo principal conservada.
 
 Skill `forms`: inputs con label, ayuda de soporte, min/max/required, validación también en API y submit habilitado para mostrar errores. Solo se bloquea durante POST válido (“DON'T disable submit buttons to block validation”). Resultados anunciados y errores con foco; sin llamadas IA, agentes ni servicios externos de runtime. Método y límites completos: [one_search.md](one_search.md).
+
+## 25/11/2026 · Laboratorio geo y valor de información (D3.2–D3.3)
+
+### Backend y pruebas matemáticas
+
+- Batería del código final con volumen de código: **61 passed, 1 warning en 29,98 s**. Verificador oficial `./scripts/comprobar.ps1` contra producción: **61 passed, 1 warning en 25,39 s**, salud y Ruff correctos.
+- Con la base de QA conteniendo una prueba aceptada y Search actualizado: **61 passed, 1 warning en 19,54 s**, Ruff correcto. Los tests geo revierten una transacción exterior incluso cuando los POST confirman sus savepoints; no eliminan el estado de usuario al salir. Las pruebas históricas filtran por su origen, sin exigir que el usuario no haya creado pruebas nuevas.
+- Cobertura nueva: emparejamiento/asignación por semilla, preperiodo completo, unidades y observaciones por par, efecto nulo/adverso/positivo, IC no degenerado, exclusión de verdad/generador en estimadores, mercado/horizonte insuficientes, guardrail de pérdida, transiciones y repetición de POST. Modelo nuevo por sustitución, rechazo de diseño obsoleto, copia idéntica sin estrechar incertidumbre, versiones y evaluaciones antiguas conservadas. Faltantes de evidencia vigente bloquean Search.
+- EVPI/EVSI: fixture contractual +80k/−60k con mantener 0, EV actual 10k y EVPI 30k; señal perfecta/ruidosa/no informativa, límites `0 ≤ EVSI ≤ EVPI`, prueba cara negativa, coste y oportunidad imputados una vez. No se representa el error de corrección numérica como garantía de convergencia del likelihood aproximado.
+
+Comandos principales, desde la raíz:
+
+```powershell
+docker compose up -d --build --wait --wait-timeout 180
+./scripts/comprobar.ps1
+docker compose -p margia-geo-qa run --rm --no-deps --volume "${PWD}/backend:/app" backend python -m pytest -q -p no:cacheprovider
+docker compose -p margia-geo-qa run --rm --no-deps --volume "${PWD}/backend:/app" backend ruff check --no-cache .
+```
+
+### Operación aislada realmente ejecutada
+
+Pila `margia-geo-qa` desde PostgreSQL vacío, frontend solo en `127.0.0.1:3002`. Migraciones 0001–0003, seed y modelos correctos. Seed observado **39,109 s**, MMM **0,176 s** (muestras de arranque, no benchmark general).
+
+```powershell
+$env:MARGIA_PORT='3002'
+docker compose -p margia-geo-qa up -d --build --wait --wait-timeout 180
+docker compose -p margia-geo-qa cp backend/tests/operacion.py backend:/app/tests/operacion.py
+docker compose -p margia-geo-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py preparar
+docker compose -p margia-geo-qa restart db backend
+docker compose -p margia-geo-qa up -d --wait --wait-timeout 120 db backend
+docker compose -p margia-geo-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py verificar
+docker compose -p margia-geo-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py reset
+```
+
+Reinicio conserva hechos, checksum, decisión fixture, MMM, Search original, evaluación Search antigua, diseño, asignaciones, observaciones, evaluación geo y versión vigente con misma fecha de creación. No reentrena ni vuelve a ejecutar el experimento. Reset: **41,342 s**, elimina pruebas/actualizaciones y recupera los 12 históricos y Search original; mismo checksum `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. La demo principal se conserva.
+
+Al cerrar: `docker compose -p margia-geo-qa down`, sin eliminar volumen. `docker compose ps` confirma los tres servicios principales saludables y únicamente `127.0.0.1:3000` publicado. Código publicado con push normal a `origin/main`; cierre documental separado.
+
+### Hallazgos corregidos sin cambiar los resultados
+
+1. Primera regresión backend: **57 passed, 1 failed**. La prueba AST rechazó que un servicio dentro de `app/modelos` importara el mundo. Se mueve la coordinación a `app/experimentos`; el estimador sigue sin importar generador/verdad. Regresión posterior correcta.
+2. Al añadir el gráfico explícito del IC, una prueba de UI seguía esperando un solo canvas: **15 passed, 1 failed**. Se actualiza para comprobar los dos gráficos.
+3. Tras aceptar geo, una prueba de Search buscaba una advertencia literal exclusiva de los históricos: **15 passed, 1 failed** en esa regresión. Se comprueba la explicación común de recuperación no identificada; se mantienen fuentes y advertencias de cada versión.
+4. Comprobación con evidencia nueva: **60 passed, 1 failed** por exigir riesgo 100 % con cuota 100.000 €. El resultado real era **99,75 %**, conservado. Se prueba el desplazamiento exacto del coste en delta y bandas y la monotonía del riesgo; no se truncan draws ni se cambian cifras para que pase.
+5. Leyenda del gráfico pre/post sobre etiquetas y excesiva altura del IC: se fija posición de leyenda, margen del eje y especificidad CSS de la altura. Titular móvil conserva espacio al ocultar el salto. Se revisan capturas reales, sin declarar QA solo por build.
+6. Contraste visual/API tras aceptar geo: 40 cuantiles omitían una cola adversa del 0,5 % y mostraban EVPI cero. `geo-1.0.1` conserva las 400 réplicas. Se añade fixture de un estado adverso entre 400 (EVPI/EVSI perfecto 150 €), sin recortar colas ni reescribir protocolos guardados.
+
+Tras corregir el prior completo: **61 passed, 1 warning en 22,07 s**, Ruff correcto. Muestra de diseño + persistencia con evidencia geo vigente: **0,651 s**, 400 estados, EVPI **38,3356 €**, EVSI **0,5434 €**, corrección de límites numéricos **0 €**. Es una muestra local CPU, no garantía general ni cota del error total de integración.
+
+### Frontend y cierre visual
+
+```powershell
+Set-Location frontend
+npm.cmd run lint
+npm.cmd run typecheck
+$env:MARGIA_QA_URL='http://127.0.0.1:3002'
+npm.cmd run test:e2e
+npm.cmd run test:e2e -- tests/geo.spec.ts
+```
+
+- Lint y TypeScript finales sin errores ni advertencias. Build Next.js de producción correcto en Docker; tres servicios principales saludables.
+- Regresión completa final de interfaz: **16 passed (2,0 min)**. Incluye centro, exportación/filtros, biblioteca, MMM, Search, laboratorio y actualización/consulta de la evidencia. Después de corregir el prior en `geo-1.0.1`, se repiten los recorridos afectados: **3 passed (27,2 s)**. Pruebas geo en la imagen definitiva, secuenciales: **22 passed, 1 warning en 5,90 s**.
+- La primera repetición final mezcló por error pytest y Playwright escribiendo en la misma pila de QA: 21 passed, 1 failed por interferencia de fixtures. Ambos procesos terminaron; se repite pytest sin concurrencia y pasa. Esa ejecución fallida no cuenta como evidencia satisfactoria.
+- 28 capturas generales (siete rutas × 1440×900, 1920×1080, 1280×720 y 390×844), cuatro del resultado geo y cuatro del resultado Search más su caso negativo. Axe sin infracciones detectadas en las combinaciones probadas; sin scroll horizontal global. Inspección manual de diseño, resultado, intervalo, leyenda y móvil. No se declara auditoría humana de lector de pantalla.
+- Modern Web Guidance `forms`: radios nativos con fieldset/legend para duraciones, controles con label y límites, validación adicional en API, error con foco y estado anunciado. He mantenido envío habilitado para mostrar errores y lo bloqueo solo durante POST válido (“DON'T disable submit buttons to block validation”). Fuente/licencia ya registrada, sin dependencias de runtime nuevas.
+
+Se mantiene el aviso heredado httpx/TestClient y el aviso de entorno `NO_COLOR`/`FORCE_COLOR` de Playwright. Sin nuevas dependencias, IA, GPU ni agentes. La optimización del reparto MMM sigue bloqueada; no se relajan umbrales para el siguiente orquestador. Método completo: [experimentos_geo.md](experimentos_geo.md).

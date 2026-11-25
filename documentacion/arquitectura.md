@@ -1,4 +1,4 @@
-# Arquitectura implementada · Fundaciones, Medición y primer radar
+# Arquitectura implementada · Fundaciones, Medición, Search y experimentación
 
 El [RFC](../RFC.md) recoge el diseño objetivo; este archivo describe únicamente el incremento existente.
 
@@ -26,7 +26,7 @@ Solo se publica el puerto web con bind 127.0.0.1. PostgreSQL y FastAPI no public
 
 `app/api/consultas.py` agrega hechos de negocio y medios por separado; nunca une hechos de distinto grano para calcular ventas. El dominio Python calcula contribución y aritmética económica. El frontend recibe valores, aplica formato español, orden visual y selección de series. No hay modelos económicos en JavaScript.
 
-La contribución observada es margen menos medios, antes de costes futuros de plataforma, pruebas y producción. No se presenta como contribución incremental. La función de recorte está probada con la fixture contractual pero todavía no se expone como estimación de la empresa ficticia.
+La contribución observada es margen menos medios, antes de costes de plataforma, pruebas y producción. No se presenta como contribución incremental. Search, radar y valor de información utilizan `comparar_captura` y `contribucion` del mismo dominio; las ramas experimentales no modifican ni duplican los hechos del negocio.
 
 ## Frontend
 
@@ -46,7 +46,7 @@ El MMM solo usa siete canales de demanda; SEM marca sigue en los hechos observad
 
 ## Pendientes deliberados
 
-Nuevas ejecuciones geo/A-B, valor de información, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D3.2–D5. Los módulos correspondientes se identifican como en desarrollo. Los históricos de arranque no se hacen pasar por nuevas ejecuciones. La respuesta creativa del negocio y el mundo experimental se ampliarán con sus pruebas antes de utilizarse en escenarios.
+Creatividad predictiva/A-B, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D4–D5. Escenarios permanece identificado como en desarrollo. La biblioteca creativa existente es descriptiva. La respuesta creativa se ampliará y probará antes de utilizarse en escenarios.
 
 ## One Search y radar
 
@@ -55,3 +55,13 @@ La migración 0003 añade protocolo experimental, asignaciones por par, observac
 `app/modelos/search.py` solo recibe observaciones de pre/post, brazo, par, intensidad y ahorro. Estima cambio total de pedidos por euro mediante ratios pre y bootstrap del par completo; no lee el mecanismo del mundo ni identifica recuperación SEO/directo. `search_servicio.py` carga datos, valora mediante el dominio económico y sirve tanto radar como simulador. No hay cálculo económico en JS ni un negocio paralelo de Search.
 
 El radar calcula una vista de la hipótesis persistente del modelo; un GET no crea ejecuciones. El POST de simulación guarda inputs/resultado inmutables por contenido y muestra reutilización al repetir. El enlace incluye ID real y lleva el foco al simulador. Fuente, alcance nacional, pooling, horizonte, extrapolación y costes comparables son explícitos. Modelo/intervalos/evaluaciones: [one_search.md](one_search.md).
+
+## Laboratorio geográfico e información
+
+`app/experimentos/servicio.py` coordina diseño → ejecución → evaluación → aceptación. Solo el orquestador importa el mundo `app/datos/mundo_geo.py`. `app/modelos/geo.py` y `informacion.py` reciben observaciones/utilidades, sin acceso a captura ni verdad. Parejas, MDE, efecto por pares, IC, guardrails y EVPI/EVSI se calculan en Python. El frontend presenta resultados y controles; no calcula beneficio ni actualiza parámetros.
+
+Se reutilizan `experimento` (protocolo/eventos JSON), `asignacion_experimento`, `observacion_experimento` y `modelo`; sin nuevos servicios, dependencias ni DDL. Los eventos separan hora real y fecha simulada. Advisory lock compartido con reset serializa mutaciones y evita doble ejecución. IDs de diseño por contenido, observaciones inmutables tras ejecución y transiciones validadas por API.
+
+Una evaluación compatible sustituye Search mediante nueva versión con relación al modelo anterior. La cadena determina el vigente; no depende de timestamps. Copias idénticas reutilizan la versión, diseños obsoletos no la sobrescriben y evaluaciones anteriores siguen consultables. Fiabilidad valida también cobertura de la evidencia vigente. La optimización MMM permanece bloqueada por su propio diagnóstico.
+
+`GET /api/v1/experimentos`, `POST /experimentos/disenar`, `GET /experimentos/{id}` y POST `/ejecutar`, `/evaluar`, `/aceptar`, con contratos Pydantic/OpenAPI. Persistencia/reset y fórmulas detalladas en [experimentos_geo.md](experimentos_geo.md).
