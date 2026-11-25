@@ -3,6 +3,7 @@
 @import "./creatividad.css";
 @import "./creative-art.css";
 @import "./ab.css";
+@import "./escenarios.css";
 
 :root {
   --background:#F4F6F5; --surface:#FFF; --secondary:#EAF0ED; --text:#172722; --muted:#52645C;

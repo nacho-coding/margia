@@ -54,7 +54,7 @@ test("fiabilidad, alcance pendiente y confirmación de reset",async({page,reques
   await page.getByRole("link",{name:"Laboratorio",exact:true}).click();
   await expect(page.getByRole("heading",{name:"Diseñar una prueba geográfica",exact:true})).toBeVisible();
   await page.getByRole("link",{name:"Escenarios",exact:true}).click();
-  await expect(page.getByText("En desarrollo · Día 4")).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Preparar comparación",exact:true})).toBeVisible();
   await page.getByRole("link",{name:"Configuración",exact:true}).click();
   await page.getByRole("button",{name:"Restablecer demo",exact:true}).click();
   await page.getByLabel("Confirmación requerida").fill("NO");

@@ -29,7 +29,7 @@ function Metodologia({modelo,onClose}:{modelo:FichaModelo;onClose:()=>void}) {
   </Drawer>;
 }
 
-function ModeloNacional({data}:{data:MedicionModelo}) {
+function ModeloNacional({data,query}:{data:MedicionModelo;query:string}) {
   const [channel,setChannel] = useState("meta");
   const [view,setView] = useState<"ajuste"|"descomposicion">("ajuste");
   const [method,setMethod] = useState(false);
@@ -78,6 +78,7 @@ function ModeloNacional({data}:{data:MedicionModelo}) {
         ],
       }}/>
       <div className="panel-bottom-note">Soporte observado: {euros(curve.minimo)} — {euros(curve.maximo)} / semana. Línea vertical: gasto de la semana hasta {fecha(modelo.holdout_fin)}. Stock previo fijo.</div>
+      <div className="scenario-measurement-entry"><ModuleLink secondary href={`/escenarios?${query}&canal=${curve.id}`}>Comparar este canal en escenarios</ModuleLink></div>
       <details className="model-data"><summary>Ver datos de la curva y marginal</summary><div className="table-wrapper" role="region" aria-label="Datos de la curva" tabIndex={0}><table><caption className="visually-hidden">Curva de {curve.nombre}; banda de coeficientes y derivada marginal por euro, sin identificación causal</caption><thead><tr>{["Inversión semanal","Pedidos modelados","p05","p95","Pedidos / € adicional","Soporte"].map(h=><th scope="col" key={h}>{h}</th>)}</tr></thead><tbody>{curve.puntos.map(p=><tr key={p.inversion}><th scope="row">{euros(p.inversion)}</th><td>{numero(p.pedidos)}</td><td>{numero(p.p05)}</td><td>{numero(p.p95)}</td><td>{numero(p.marginal,4)}</td><td>{p.extrapolado?"Extrapolación":"Observado en train"}</td></tr>)}</tbody></table></div></details>
     </section>}</div>
     <section className="panel model-assignment"><div className="panel-header"><div><h2>Asignación del modelo por canal</h2><p>Semanas completas seleccionadas · estimaciones condicionadas al modelo</p></div><Badge>Sin interpretación causal</Badge></div><div className="table-wrapper" role="region" aria-label="Asignación del modelo" tabIndex={0}><table><caption className="visually-hidden">Pedidos y margen asignados por el MMM. Saldo del término modelado menos inversión. No constituye contribución incremental.</caption><thead><tr>{["Canal","Pedidos asignados","Banda p05–p95","Margen asignado","Inversión","Saldo modelado","Saldo p05–p95"].map(h=><th scope="col" key={h}>{h}</th>)}</tr></thead><tbody>{data.resumen.map(r=><tr key={r.id}><th scope="row"><span className="channel-name"><i style={{background:r.color}}/>{r.nombre}</span></th><td>{numero(r.pedidos_modelados)}</td><td>{numero(r.pedidos_p05)} — {numero(r.pedidos_p95)}</td><td>{euros(r.margen_asignado)}</td><td>{euros(r.inversion)}</td><td>{euros(r.saldo_modelado)}</td><td>{euros(r.saldo_p05)} — {euros(r.saldo_p95)}</td></tr>)}</tbody></table></div><div className="panel-bottom-note">Margen asignado = término de pedidos × margen observado por pedido de cada semana. Saldo = margen asignado − inversión del canal. Bandas de coeficientes con forma fija; no representan beneficio incremental identificado ni permiten priorizar inversiones.</div></section>
@@ -90,7 +91,7 @@ export function Medicion({query}:{query:string}) {
   const model = useRemote<MedicionModelo>(`modelos/mmm?${query}`);
   const platforms = useRemote<Tabla<Canal>>(`medios?${query}`);
   return <>
-    {model.error?<ErrorState message={model.error} retry={model.retry}/>:model.data?<ModeloNacional data={model.data}/>:<Loading/>}
+    {model.error?<ErrorState message={model.error} retry={model.retry}/>:model.data?<ModeloNacional data={model.data} query={query}/>:<Loading/>}
     {platforms.error?<ErrorState message={platforms.error} retry={platforms.retry}/>:platforms.data?<section className="panel"><div className="panel-header"><div><h2>Lectura de las plataformas</h2><p>{platforms.data.cobertura} · filtro de mercado aplicado</p></div><Badge>Atribución descriptiva</Badge></div><div className="table-wrapper" role="region" aria-label="Tabla de medios" tabIndex={0}><table><caption className="visually-hidden">Inversión y atribución por canal. Las conversiones entre canales no se suman.</caption><thead><tr>{["Canal","Inversión","Impresiones","Clics","Conv. atribuidas","ROAS atribuido","Incrementalidad"].map(h=><th scope="col" key={h}>{h}</th>)}</tr></thead><tbody>{platforms.data.filas.map(c=><tr key={c.id}><th scope="row"><span className="channel-name"><i style={{background:c.color}}/>{c.nombre}</span><small>{c.tipo==="captura"?"Captura de demanda":"Generación de demanda"}</small></th><td>{euros(c.inversion)}</td><td>{numero(c.impresiones)}</td><td>{numero(c.clics)}</td><td>{numero(c.conversiones)}</td><td>{c.roas_atribuido==null?"n/d":`${numero(c.roas_atribuido,2)}×`}</td><td><Badge>No identificada</Badge></td></tr>)}</tbody></table></div><div className="panel-bottom-note">Ordenado por inversión descendente · Conversiones solapadas entre plataformas · ROAS atribuido no equivale a beneficio.</div></section>:null}
     <div className="model-next"><ModuleLink secondary href={`/one-search?${query}`}>Explorar One Search</ModuleLink></div>
   </>;
