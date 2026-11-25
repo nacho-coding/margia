@@ -3,7 +3,7 @@
 
 MARGIA es una prueba de concepto avanzada de un gemelo digital comercial de marketing: conecta medición de medios, One Search (SEO + SEM), inteligencia creativa, experimentación y optimización económica sobre un único estado del negocio. El objetivo es decidir dónde invertir, dónde reducir inversión, cuándo experimentar y cómo aprender de los resultados.
 
-**Estado:** primer incremento funcional del Día 1: aplicación de producción local con PostgreSQL, API, datos persistentes reproducibles, centro económico y vistas descriptivas. Modelos, simulación, experimentación y optimización continúan en desarrollo. No es una implantación productiva ni evidencia de resultados comerciales reales.
+**Estado:** fundaciones y Medición (D2.1–D2.2): aplicación local con PostgreSQL, datos reproducibles, centro económico, MMM nacional ajustado y diagnóstico persistente, descomposición y curvas con soporte. El modelo mejora la referencia predictiva, pero bloquea recomendaciones por inestabilidad del reparto por canal. Radar económico, Search experimental, escenarios y optimización siguen pendientes. No es una implantación productiva ni evidencia de resultados comerciales reales.
 
 ## Contrato de desarrollo
 
@@ -65,13 +65,13 @@ Exige escribir `RESTABLECER DEMO`; `-Confirmar` sirve para pruebas operativas ex
 ## Qué se puede utilizar
 
 - Centro de decisiones: cinco KPIs desde PostgreSQL, comparación equivalente, serie diaria, detalle de definición, filtros de mercado/periodo y CSV.
-- Medición: gasto y atribución por plataforma, sin presentar conversiones solapadas como pedidos únicos.
+- Medición: atribución por plataforma separada del MMM nacional; 104 semanas, dos ventanas rolling y 20 semanas finales reservadas, referencia estacional, descomposición reconciliada, bandas empíricas, curvas y marginal con soporte. Los filtros visuales no reentrenan; un mercado individual no recibe un modelo nacional desglosado artificialmente. [Método y límites](documentacion/modelo_mmm.md).
 - One Search: consultas SEO/SEM, intención, orden, paginación y cobertura declarada; sin estimación de recuperación todavía.
 - Creatividad: 80 registros, 12 composiciones SVG originales, filtro por canal y detalle con CTR/CVR y denominadores.
-- Fiabilidad: cobertura, integridad de claves y margen; manifiesto y checksum. Configuración: reset explícito.
+- Fiabilidad: cobertura, integridad de claves y margen, diagnóstico del MMM; manifiesto y checksum. Configuración: reset explícito que reconstruye también el modelo.
 - Laboratorios de experimentos y escenarios: rutas señaladas como en desarrollo. El radar económico y la aprobación de decisiones no están implementados.
 
-Universo: 247.562 registros, 24 mercados ficticios, 730 días de negocio y medios, corte fijo 31/10/2026, semilla 260725. Búsqueda cubre los últimos 28 días; campañas, siete; creatividad, 28 días con mercados parciales por activo. Todas las fuentes son sintéticas.
+Universo observado: 247.562 registros, 24 mercados ficticios, 730 días de negocio y medios, corte fijo 31/10/2026, semilla 260725. El MMM usa 728 días en semanas completas; dos días iniciales quedan fuera del ajuste. Búsqueda cubre los últimos 28 días; campañas, siete; creatividad, 28 días con mercados parciales por activo. Todas las fuentes son sintéticas.
 
 ## Verificación
 

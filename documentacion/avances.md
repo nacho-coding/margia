@@ -76,3 +76,51 @@ Hash lógico final: `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b1317
 Día 2, D2.1–D2.3: agregación semanal, MMM regularizado con holdout y baseline, diagnóstico, curvas y primer radar económico. La economía aritmética ya está probada; la recuperación de Search y el flujo geo → creatividad → optimización → decisión aún no están implementados. No hay candidata v0.1.0-demo ni etiqueta final.
 
 Evidencia detallada y límites: [validacion.md](validacion.md). Backlog actualizado: [backlog.md](backlog.md). No se han utilizado agentes, LLM locales, GPU ni APIs de pago obligatorias.
+
+## 25/11/2026 · Inicio del incremento de Medición (D2.1–D2.2)
+
+- Releídos AGENTS y los seis contratos obligatorios, avances, backlog, arquitectura y decisiones. Inspección: `main...origin/main [ahead 4]`, limpio; remoto correcto, HEAD remoto `ccf1a64`, sin divergencia observada.
+- Tres contenedores principales saludables. La consola requiere acceso fuera del sandbox a Docker y localhost; se ejecutan comprobaciones acotadas, sin cambiar la seguridad de Windows.
+- Tareas: 104 semanas completas nacionales; MMM restringido con adstock/Hill y controles previos; dos folds rolling anteriores a 20 semanas reservadas; baseline estacional; bootstrap por bloques, sensibilidad y abstención; artefacto PostgreSQL; API tipada y vista con descomposición/curvas/soporte/diagnóstico. El filtro de mercado no inventa estimaciones locales.
+- Pruebas previstas: invariantes de curvas y reconciliación, alteración de holdout sin modificar parámetros aprendidos, semilla, persistencia/idempotencia/migración/reset; pytest/Ruff, lint/typecheck/build, Playwright y capturas con axe en cuatro tamaños.
+- `git push --dry-run origin main` sigue devolviendo 403 para `ignaciofontal`. No se cambia el remoto ni se reescribe la historia. Se ha comunicado la necesidad de escritura efectiva y aceptación de la invitación; se reintentará al cerrar el hito.
+- La primera batería del incremento detecta un error en la prueba de agregación: comparaba DATE con string tipado VARCHAR; corregida para pasar `date`. No se declara satisfactoria esa ejecución (25 passed, 1 failed).
+
+## 25/11/2026 · Cierre verificado de Medición (D2.1–D2.2)
+
+### Entregado
+
+- MMM nacional CPU real de 104 semanas, siete canales de demanda, controles, adstock/Hill y regresión restringida regularizada. SEM marca no se duplica como demanda. Dos validaciones rolling antes de 20 semanas reservadas; escalas exclusivamente de train.
+- Modelo persistente con inputs, configuración, semilla, versiones, checksum, diagnóstico y réplicas conjuntas. Migración 0002; preparación batch al arrancar y conservación tras reiniciar. Reset atómico reconstruye el modelo.
+- API tipada de modelos/medición/curvas; filtro de periodo solo selecciona semanas completas. Mercado individual devuelve no aplicable, sin prorratear estimaciones nacionales; la atribución mantiene el filtro.
+- Medición integra ajuste/naive, banda empírica, descomposición y residual reconciliados, curvas con soporte/extrapolación y marginal, valoración descriptiva de términos, metodología y estado del modelo. Todas las cifras proceden del backend. Fiabilidad incorpora el diagnóstico vigente.
+- Resultado adverso conservado: WAPE 1,5583 % frente a 3,1699 % naive, pero sensibilidad del reparto 5,6253 > umbral 1. **Recomendaciones bloqueadas**. No se fuerza un resultado favorable ni se presenta ese reparto como incrementalidad causal.
+- La revisión detectó segunda contracción en refits regularizados. Se conserva mmm-1.0.0 y se añade mmm-1.0.1 con errores de refit centrados y medios truncados; bandas de escenarios condicionales, sin garantía de cobertura ni IC causal. Cobertura medida final: 19/20 semanas.
+
+### Comandos y evidencia final
+
+| Comando / comprobación | Resultado |
+|---|---|
+| `docker compose up -d --build --wait --wait-timeout 180` | Build de producción, TypeScript y tres servicios saludables |
+| `scripts/comprobar.ps1` | 26 passed, 1 warning en 22,74 s; Ruff y health correctos |
+| `npm.cmd run lint` / `npm.cmd run typecheck` | Sin errores |
+| `npm.cmd run test:e2e` | 9 passed (1,5 min), incluida regresión D1 |
+| Siete rutas × cuatro resoluciones | 28 capturas con canvas preparados; cero infracciones axe y sin scroll global; inspección visual de Medición, descomposición y metodología |
+| Pila nueva `margia-mmm-qa` | Migraciones desde vacío, seed y ajuste saludables |
+| `tests/operacion.py preparar/verificar` tras reinicio | Decisión fixture, negocio, hash, resultado y fecha de creación del MMM conservados sin reentrenar |
+| `tests/operacion.py reset` en pila aislada | Reconstruye mismo resultado (salvo duración) y hash; nueva fecha de creación, elimina fixture; 43,841 s |
+| `docker compose -p margia-mmm-qa down` | Detenida sin borrar volumen; demo principal conservada |
+| 15 lecturas de API de modelo guardado | Mín. 22,10 ms; mediana 23,79 ms; máx. 288,78 ms; no es navegación completa |
+| RAM de contenedores durante QA | Web 84,96 MiB; API 96,23 MiB; DB 102,8 MiB; no picos ni VM |
+| `git diff --cached --check`, revisión de exclusiones | Sin defectos de whitespace; .env, dependencias y capturas fuera de staging |
+
+Modelo vigente `mmm-4246cd7b830a0a9f7cfc`, versión `mmm-1.0.1`; ajuste observado 0,153 s, sin seed. Checksum del universo permanece `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. Detalles, fallos iniciales y limitaciones en [validacion.md](validacion.md); método completo en [modelo_mmm.md](modelo_mmm.md). Se mantiene el warning heredado httpx/TestClient.
+
+### Git, pendientes y riesgos
+
+- Backend probado: `4477940` — «feat: ajustar MMM nacional con validación temporal y persistencia».
+- Interfaz probada: `d0ad46e` — «feat: mostrar diagnóstico MMM y curvas con soporte y límites». Identidad temporal Codex, sin modificar configuración global.
+- Reintento real `git push origin main`: **403**, «Permission to nacho-coding/margia.git denied to ignaciofontal». No se publica, no se cambia origin ni se usa force. Escritura efectiva/aceptación de invitación todavía pendiente. Los cuatro commits previos se conservan junto a los nuevos; el cierre documental se añade como commit separado. El remoto observado sigue en `ccf1a64`.
+- **D2.3 no cerrado.** Próximo corte: evidencia histórica y estimador Search (D3.1) para alimentar un radar económico defendible. Mientras tanto se mantiene la hipótesis observada del centro sin impacto esperado inventado. La decisión de orden queda registrada en decisiones.md.
+- Continúan pendientes geo/EVSI, creatividad predictiva/A-B, escenarios/orquestador/optimización, decisiones e incidencias. El Día 2 completo y la POC no se declaran terminados.
+- Sin agentes/subagentes, LLM locales, GPU, dependencias nuevas ni servicios externos de runtime. No se han modificado los contratos de producto para acomodar el resultado.

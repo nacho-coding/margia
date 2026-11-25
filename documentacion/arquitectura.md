@@ -1,4 +1,4 @@
-# Arquitectura implementada · Día 1
+# Arquitectura implementada · Fundaciones y Medición
 
 El [RFC](../RFC.md) recoge el diseño objetivo; este archivo describe únicamente el incremento existente.
 
@@ -38,6 +38,12 @@ Se aplica la skill Modern Web Guidance instalada por el usuario; la corresponden
 
 `GET /api/v1/health`, `contexto`, `kpis`, `medios`, `busqueda`, `creativos`, `fiabilidad`, `decisiones`, `demo/manifiesto`, `exportar/negocio.csv`; `POST /api/v1/demo/reset` con confirmación literal. Contrato completo: `/api/openapi.json` y documentación `/api/documentacion`. Errores de validación en español; proxy impide mutaciones de origen distinto y exige JSON. No hay autenticación/RBAC: es una POC exclusivamente local.
 
+Medición añade `GET /api/v1/modelos`, `modelos/mmm?dias=…&mercado=…` y `modelos/{id}/curvas?canal=…`, con contratos Pydantic. `app/modelos/mmm.py` es un estimador puro de NumPy/SciPy; no importa el generador ni lee verdad latente. `servicio.py` carga negocio y medios por separado, verifica cobertura, agrega semanas y guarda el artefacto JSON versionado en `modelo` (migración 0002).
+
+El arranque migra, conserva/inicializa el universo y prepara el modelo bajo el mismo advisory lock del reset. Las lecturas no entrenan; reset reconstruye datos y modelo dentro de la misma transacción. Un reinicio conserva ID, parámetros y fecha de creación. Las revisiones del algoritmo usan versión nueva; no se sobrescriben artefactos anteriores. Detalles y límites: [modelo_mmm.md](modelo_mmm.md).
+
+El MMM solo usa siete canales de demanda; SEM marca sigue en los hechos observados y en la atribución, separado de la generación modelada. El backend calcula también la valoración descriptiva de términos de pedidos mediante el margen observado por pedido y la función económica compartida. Esa asignación no se utiliza como incrementalidad causal ni se suma a la contribución observada.
+
 ## Pendientes deliberados
 
-MMM, radar económico estimado, recuperación experimental, geo/A-B, valor de información, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D2–D5. Los módulos correspondientes se identifican como en desarrollo. El generador inicial no sustituye esos estimadores ni un gemelo causal completo. La respuesta creativa del negocio y el mundo experimental se ampliarán junto con sus pruebas antes de utilizarse en escenarios.
+Radar económico estimado, recuperación experimental, geo/A-B, valor de información, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D2.3–D5. Los módulos correspondientes se identifican como en desarrollo. El generador inicial no sustituye esos estimadores ni un gemelo causal completo. La respuesta creativa del negocio y el mundo experimental se ampliarán junto con sus pruebas antes de utilizarse en escenarios.
