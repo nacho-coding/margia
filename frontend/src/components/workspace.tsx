@@ -9,7 +9,8 @@ import { useRemote } from "@/services/use-remote";
 import { ErrorState } from "@/components/error-state";
 import { NavigationDrawer } from "@/components/navigation-drawer";
 import { Badge, Drawer, Loading } from "@/components/ui";
-import { Centro, OneSearch, Creatividad, FiabilidadView, Pending, Ajustes } from "@/features/views";
+import { Centro, OneSearch, FiabilidadView, Pending, Ajustes } from "@/features/views";
+import { Creatividad } from "@/features/creatividad";
 import { Medicion } from "@/features/medicion";
 import { Experimentos } from "@/features/experimentos";
 
@@ -23,7 +24,7 @@ const descriptions:Record<string,{title:string;subtitle:string;eyebrow:string}> 
   "/":{title:"Centro de decisiones",subtitle:"Una visión compartida del negocio. La evidencia, antes de actuar.",eyebrow:"PERSPECTIVA ECONÓMICA"},
   "/medicion":{title:"Medición de medios",subtitle:"Pedidos propios, respuesta estimada y atribución. Cada lectura con sus límites.",eyebrow:"COMPRENDER EL RENDIMIENTO"},
   "/one-search":{title:"Una búsqueda. Una visión.",subtitle:"SEO y SEM en el mismo contexto comercial, sin duplicar inversión.",eyebrow:"ONE SEARCH"},
-  "/creatividad":{title:"La creatividad, con contexto",subtitle:"Activos originales y rendimiento observado. Cada métrica con su denominador.",eyebrow:"INTELIGENCIA CREATIVA"},
+  "/creatividad":{title:"La creatividad, con contexto",subtitle:"Histórico, contexto y propuestas. Cada estimación, con su alcance.",eyebrow:"INTELIGENCIA CREATIVA"},
   "/experimentos":{title:"Laboratorio de experimentos",subtitle:"La siguiente decisión empieza por una hipótesis contrastable.",eyebrow:"APRENDER ANTES DE ESCALAR"},
   "/escenarios":{title:"Laboratorio de escenarios",subtitle:"Comparar el valor económico de mantener, ahorrar y reinvertir.",eyebrow:"DECIDIR CON PERSPECTIVA"},
   "/fiabilidad":{title:"La confianza se comprueba",subtitle:"Cobertura, integridad y límites del universo sintético.",eyebrow:"FIABILIDAD DEL DATO"},
@@ -49,6 +50,7 @@ export function Workspace() {
     const next=new URLSearchParams(query); if(value) next.set(name,value); else next.delete(name);
     if(path==="/one-search"&&search.get("hipotesis"))next.set("hipotesis",search.get("hipotesis")!);
     if(path==="/experimentos"&&search.get("experimento"))next.set("experimento",search.get("experimento")!);
+    if(path==="/creatividad")for(const key of ["vista","evaluacion","seleccion"])if(search.get(key))next.set(key,search.get(key)!);
     router.replace(`${path}?${next.toString()}`,{scroll:false});
   };
   return <div className={`workspace ${collapsed?"collapsed":""} ${mobileOpen?"mobile-open":""}`}>
@@ -71,6 +73,6 @@ export function Workspace() {
         <footer className="page-footer"><span><span className="footer-mark">M</span>MARGIA <span className="muted">/</span> Cada decisión tiene un valor.</span><span>Demo sintética · {ctx?.version||"Inicializando"} <Check size={12}/></span></footer>
       </main>
     </div>
-    {method&&<Drawer title="Metodología y alcance" onClose={()=>setMethod(false)}><Badge>Demo con datos sintéticos</Badge><h3>Una sola verdad económica</h3><p>Los pedidos y las ventas se generan una sola vez en el negocio propio. Las conversiones atribuidas por plataforma pueden solaparse y se presentan por separado.</p><h3>Qué se puede comprobar ahora</h3><p>Inversión, margen, contribución tras marketing, cobertura y reconciliación. El MMM nacional, One Search y el laboratorio geográfico muestran estimaciones, incertidumbre y límites. La creatividad predictiva y la optimización quedan para las siguientes fases.</p><h3>Cómo leer la contribución</h3><p>Margen bruto menos inversión en medios, incluido CRM. Antes de costes de plataforma, producción creativa y experimentación. Cada escenario futuro imputará esos costes explícitamente.</p><h3>Trazabilidad</h3><dl className="definition-list"><dt>Fecha de corte</dt><dd>{ctx&&fecha(ctx.corte)}</dd><dt>Semilla raíz</dt><dd>{ctx?.semilla}</dd><dt>Generador</dt><dd>{ctx?.version}</dd></dl><p className="small muted">El corte es independiente del reloj. Aprobar una decisión en esta POC nunca activará publicidad.</p><a className="text-link" href="/api/openapi.json" target="_blank" rel="noreferrer">Consultar contrato de API<ArrowUpRight size={14}/></a></Drawer>}
+    {method&&<Drawer title="Metodología y alcance" onClose={()=>setMethod(false)}><Badge>Demo con datos sintéticos</Badge><h3>Una sola verdad económica</h3><p>Los pedidos y las ventas se generan una sola vez en el negocio propio. Las conversiones atribuidas por plataforma pueden solaparse y se presentan por separado.</p><h3>Qué se puede comprobar ahora</h3><p>Inversión, margen, contribución tras marketing, cobertura y reconciliación. El MMM nacional, One Search y el laboratorio geográfico muestran estimaciones, incertidumbre y límites. El pretest creativo estima el contexto y conserva sus límites. La prueba A/B y la optimización quedan para las siguientes fases.</p><h3>Cómo leer la contribución</h3><p>Margen bruto menos inversión en medios, incluido CRM. Antes de costes de plataforma, producción creativa y experimentación. Cada escenario futuro imputará esos costes explícitamente.</p><h3>Trazabilidad</h3><dl className="definition-list"><dt>Fecha de corte</dt><dd>{ctx&&fecha(ctx.corte)}</dd><dt>Semilla raíz</dt><dd>{ctx?.semilla}</dd><dt>Generador</dt><dd>{ctx?.version}</dd></dl><p className="small muted">El corte es independiente del reloj. Aprobar una decisión en esta POC nunca activará publicidad.</p><a className="text-link" href="/api/openapi.json" target="_blank" rel="noreferrer">Consultar contrato de API<ArrowUpRight size={14}/></a></Drawer>}
   </div>;
 }
