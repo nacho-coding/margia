@@ -9,8 +9,18 @@ from sqlalchemy.orm import Session
 from app.api.contratos import Contexto, Fiabilidad, KPIs, Metrica, Periodo
 from app.dominio.economia import cociente, contribucion
 from app.modelos.mmm import VERSION as VERSION_MMM
+from app.modelos.search import VERSION as VERSION_SEARCH
 from app.persistencia.db import get_db
-from app.persistencia.tablas import Canal, MediosDiarios, Mercado, Modelo, NegocioDiario, Snapshot
+from app.persistencia.tablas import (
+    Canal,
+    Experimento,
+    MediosDiarios,
+    Mercado,
+    Modelo,
+    NegocioDiario,
+    ObservacionExperimento,
+    Snapshot,
+)
 
 Db = Annotated[Session, Depends(get_db)]
 Dias = Literal[28, 56, 90, 365]
@@ -67,8 +77,8 @@ def contexto(db: Session) -> Contexto:
                     evidencia="Observado sintético", moneda="EUR",
                     mercados=[{"id": m.id, "nombre": m.nombre} for m in mercados],
                     manifiesto=snapshot.manifiesto,
-                    modulos={"centro": "Datos observados", "medicion": "MMM nacional validado temporalmente y atribución descriptiva",
-                             "one-search": "Datos observados; estimación pendiente", "creatividad": "Biblioteca observada; pretest pendiente",
+                    modulos={"centro": "Datos observados y radar de marca", "medicion": "MMM nacional validado temporalmente y atribución descriptiva",
+                             "one-search": "Evidencia histórica y simulador económico de marca", "creatividad": "Biblioteca observada; pretest pendiente",
                              "experimentos": "En desarrollo · Día 3", "escenarios": "En desarrollo · Día 4",
                              "fiabilidad": "Integridad de fuentes; incidencias alternativas pendientes"})
 
@@ -159,6 +169,20 @@ def fiabilidad(db: Session) -> Fiabilidad:
         diagnostico = " ".join(f"{m.version}: {m.resultado['estado']}. " +
                               (" ".join(m.resultado['motivos']) or "Ajuste observacional nacional; optimización deshabilitada hasta calibración.")
                               for m in modelos)
+    search = db.scalar(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION_SEARCH))
+    if search:
+        observaciones = db.scalar(select(func.count()).select_from(ObservacionExperimento)
+            .join(Experimento, Experimento.id == ObservacionExperimento.experimento_id)
+            .where(Experimento.snapshot_id == snapshot.id, Experimento.tipo == "historico_search"))
+        esperadas = search.resultado["experimentos"]*mercados*2
+        completo = observaciones == esperadas
+        fuentes.append(dict(id="observacion_experimento", nombre="Históricos experimentales Search", filas=observaciones,
+            dias=28, cobertura=f"{search.resultado['experimentos']} experimentos de arranque; pre y post de 28 días, pares repetidos",
+            estado="limitado" if completo else "bloqueado"))
+        diagnostico += f" {search.version}: {search.resultado['estado']}; efecto total de pedidos por euro, no recuperación SEO."
+        if not completo:
+            bloqueado = True
+            incidencias.append(dict(causa="Faltan observaciones experimentales Search", accion="Restablecer la evidencia antes de evaluar marca."))
     return Fiabilidad(snapshot=snapshot.id, estado="bloqueado" if bloqueado else "limitado", fuentes=fuentes,
                        reglas=reglas, incidencias=incidencias, checksum=snapshot.checksum,
                        diagnostico_modelos=diagnostico + " La cobertura parcial limita las fuentes indicadas.")

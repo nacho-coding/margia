@@ -23,27 +23,42 @@ from app.api.contratos import (
     ConfirmacionReset,
     Contexto,
     CurvasModelo,
+    EvidenciaSearch,
     Fiabilidad,
     InventarioModelos,
     KPIs,
     MedicionModelo,
+    ParametrosSearch,
+    RadarSearch,
     Salud,
+    SimulacionSearchRespuesta,
     TablaDatos,
 )
 from app.datos.generador import generar
+from app.datos.historia_search import asegurar_historia
 from app.dominio.economia import cociente
+from app.modelos.search_servicio import (
+    asegurar_search,
+    evidencia,
+    guardar_simulacion,
+    oportunidades,
+)
 from app.modelos.servicio import asegurar_modelo, ficha, medicion, modelo_actual
 from app.persistencia.db import Base
 from app.persistencia.tablas import (
-    BusquedaDiaria as B,
-)
-from app.persistencia.tablas import (
+    AsignacionExperimento,
     Campana,
     Canal,
     Creativo,
     Decision,
+    Experimento,
     NegocioDiario,
+    ObservacionExperimento,
+    SimulacionSearch,
     Snapshot,
+)
+from app.persistencia.tablas import (
+    BusquedaDiaria as B,
 )
 from app.persistencia.tablas import (
     CreatividadDiaria as C,
@@ -144,7 +159,45 @@ def obtener_busqueda(db: Db, filtro: FiltroAPI, pagina: int = Query(1, ge=1),
                     total=total, pagina=pagina, paginas=paginas, evidencia="Observado sintético",
                     cobertura="Últimos 28 días del snapshot; las fechas anteriores no están observadas en búsqueda.",
                     advertencias=["La posición SEO no identifica recuperación de pedidos.",
-                                  "Estimación de sustitución y simulador de recorte pendientes del Día 3."])
+                                  "La evidencia experimental estima cambio total de pedidos por euro; no recuperación SEO por consulta."])
+
+
+@app.get("/api/v1/busqueda/evidencia", response_model=EvidenciaSearch)
+def obtener_evidencia_search(db: Db, filtro: FiltroAPI):
+    return evidencia(db, filtro)
+
+
+@app.post("/api/v1/busqueda/simular", response_model=SimulacionSearchRespuesta)
+def simular_busqueda(entrada: ParametrosSearch, db: Db, filtro: FiltroAPI):
+    return guardar_simulacion(db, filtro, entrada)
+
+
+@app.get("/api/v1/busqueda/simulaciones/{simulacion_id}", response_model=SimulacionSearchRespuesta)
+def obtener_simulacion_search(simulacion_id: str, db: Db):
+    fila = db.get(SimulacionSearch, simulacion_id)
+    if not fila:
+        raise HTTPException(404, "La evaluación guardada no existe.")
+    return dict(id=fila.id, reutilizada=True, resultado=fila.resultado)
+
+
+@app.get("/api/v1/busqueda/historicos/{experimento_id}")
+def obtener_historico_search(experimento_id: str, db: Db):
+    e = db.get(Experimento, experimento_id)
+    if not e or e.snapshot_id != snapshot_actual(db).id or e.tipo != "historico_search":
+        raise HTTPException(404, "El histórico no pertenece al snapshot activo.")
+    asignaciones = db.scalars(select(AsignacionExperimento).where(AsignacionExperimento.experimento_id == e.id)
+                             .order_by(AsignacionExperimento.par_id, AsignacionExperimento.brazo)).all()
+    observaciones = db.scalars(select(ObservacionExperimento).where(ObservacionExperimento.experimento_id == e.id)
+                               .order_by(ObservacionExperimento.mercado_id, ObservacionExperimento.periodo)).all()
+    return dict(id=e.id, origen=e.origen, protocolo=e.protocolo,
+        asignaciones=[dict(mercado=a.mercado_id, par=a.par_id, brazo=a.brazo, probabilidad=a.probabilidad) for a in asignaciones],
+        observaciones=[dict(mercado=o.mercado_id, periodo=o.periodo, pedidos=o.pedidos,
+                           gasto=o.gasto_cent/100, presupuesto=o.presupuesto_cent/100) for o in observaciones])
+
+
+@app.get("/api/v1/oportunidades", response_model=RadarSearch)
+def obtener_oportunidades(db: Db, filtro: FiltroAPI):
+    return oportunidades(db, filtro, ParametrosSearch())
 
 
 @app.get("/api/v1/creativos", response_model=TablaDatos)
@@ -211,7 +264,10 @@ def reset_demo(confirmacion: ConfirmacionReset, db: Db):
     for nombre, filas in mundo.tablas.items():
         for i in range(0, len(filas), 2000):
             db.execute(insert(Base.metadata.tables[nombre]), filas[i:i+2000])
-    asegurar_modelo(db, db.get(Snapshot, m["id"]))
+    snapshot = db.get(Snapshot, m["id"])
+    asegurar_modelo(db, snapshot)
+    asegurar_historia(db, snapshot)
+    asegurar_search(db, snapshot)
     db.commit()
     return {"estado": "restablecido", "snapshot": m["id"], "checksum": m["checksum"],
             "segundos": round(time.perf_counter()-inicio, 3)}

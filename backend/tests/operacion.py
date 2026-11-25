@@ -12,6 +12,7 @@ from sqlalchemy import func, select
 
 from app.main import app
 from app.modelos.mmm import VERSION
+from app.modelos.search import VERSION as VERSION_SEARCH
 from app.persistencia.db import SessionLocal
 from app.persistencia.tablas import Decision, Modelo, NegocioDiario, Snapshot
 
@@ -24,16 +25,20 @@ action = sys.argv[1]
 with SessionLocal.begin() as db:
     snapshot = db.scalar(select(Snapshot))
     modelo = db.scalar(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION))
+    search = db.scalar(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION_SEARCH))
     modelo_reproducible = {k: v for k, v in modelo.resultado.items() if k != "segundos_ajuste"}
     if action == "preparar":
         db.add(Decision(id="qa-persistencia", snapshot_id=snapshot.id,
                         ejecucion_id="fixture-operacion-sin-ejecucion", estado="archivado",
                         motivo="Fixture explícita para verificar persistencia, no decisión de negocio.",
                         evidencia={"tipo": "Fixture de prueba operativa"}))
+        simulacion = client.post("/api/v1/busqueda/simular", json={"recorte_pct": 50, "cuota_plataforma": 6000}).json()
         expected.write_text(json.dumps({"checksum": snapshot.checksum,
                                         "conteos": snapshot.manifiesto["conteos"],
                                         "modelo": modelo_reproducible,
-                                        "modelo_creado": modelo.creado.isoformat()}), encoding="utf-8")
+                                        "modelo_creado": modelo.creado.isoformat(),
+                                        "search": search.resultado,
+                                        "simulacion": simulacion}), encoding="utf-8")
         print("Fixture de persistencia y MMM preparados en PostgreSQL de validación.")
     elif action == "verificar":
         assert db.get(Decision, "qa-persistencia") is not None
@@ -41,6 +46,9 @@ with SessionLocal.begin() as db:
         assert db.scalar(select(func.count()).select_from(NegocioDiario)) == 17520
         assert modelo_reproducible == json.loads(expected.read_text())["modelo"]
         assert modelo.creado.isoformat() == json.loads(expected.read_text())["modelo_creado"]
+        assert search.resultado == json.loads(expected.read_text())["search"]
+        guardada = json.loads(expected.read_text())["simulacion"]
+        assert client.get("/api/v1/busqueda/simulaciones/"+guardada["id"]).json()["resultado"] == guardada["resultado"]
         print("Reinicio: decisión, checksum, negocio y artefacto MMM conservados sin reentrenar.")
     elif action == "reset":
         before = snapshot.checksum
@@ -54,6 +62,10 @@ with SessionLocal.begin() as db:
             nuevo = despues.scalar(select(Modelo).where(Modelo.version == VERSION))
             assert {k: v for k, v in nuevo.resultado.items() if k != "segundos_ajuste"} == modelo_reproducible
             assert nuevo.creado != modelo.creado
+            search_nuevo = despues.scalar(select(Modelo).where(Modelo.version == VERSION_SEARCH))
+            assert search_nuevo.resultado == search.resultado
+        guardada = json.loads(expected.read_text())["simulacion"]
+        assert client.get("/api/v1/busqueda/simulaciones/"+guardada["id"]).status_code == 404
         assert client.get("/api/v1/modelos/mmm").status_code == 200
         print(json.dumps({"reinicio": "correcto", "reset": result.json()}, ensure_ascii=False))
     else:

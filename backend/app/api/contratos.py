@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Salud(BaseModel):
@@ -179,3 +179,89 @@ class InventarioModelos(BaseModel):
 class CurvasModelo(BaseModel):
     modelo: str
     curvas: list[CurvaModelo]
+
+
+class ParametrosSearch(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    recorte_pct: float = Field(50, ge=0, le=100)
+    cuota_plataforma: float = Field(0, ge=0, le=1_000_000)
+    coste_experimento: float = Field(0, ge=0, le=1_000_000)
+    plataforma_comun: bool = False
+    hipotesis: str | None = Field(None, max_length=80)
+
+
+class BandaSearch(BaseModel):
+    p05: float
+    p50: float
+    p95: float
+    probabilidad_perdida: float
+    delta_pedidos_p05: float
+    delta_pedidos_p95: float
+    replicas: int
+    metodo: str
+
+
+class BalanceSearch(BaseModel):
+    pedidos: float
+    margen: float
+    inversion: float
+    plataforma: float
+    experimento: float
+    contribucion: float
+
+
+class PasoEconomico(BaseModel):
+    nombre: str
+    importe: float
+    offset: float
+    altura: float
+    favorable: bool
+
+
+class EvaluacionSearch(BaseModel):
+    periodo: Periodo
+    modelo: str
+    version: str
+    hipotesis: str
+    semilla: int
+    evidencia: str
+    entradas: ParametrosSearch
+    recuperacion: float | None
+    tasa_pedidos_por_euro: float
+    inversion_marca: float
+    extrapolado: bool
+    motivos: list[str]
+    estado: str
+    recomendacion: str
+    base: BalanceSearch
+    alternativa: BalanceSearch
+    ahorro: float
+    delta_pedidos: float
+    cambio_margen: float
+    costes_incrementales: float
+    delta: float
+    margen_pedido: float | None
+    perdida_maxima_pedidos: float | None
+    desglose: list[PasoEconomico]
+    banda: BandaSearch
+    advertencias: list[str]
+
+
+class SimulacionSearchRespuesta(BaseModel):
+    id: str
+    reutilizada: bool
+    resultado: EvaluacionSearch
+
+
+class EvidenciaSearch(BaseModel):
+    modelo: dict[str, Any]
+    periodo: Periodo
+    serie: list[dict[str, Any]]
+    defecto: ParametrosSearch
+    soporte_pct: list[float]
+
+
+class RadarSearch(BaseModel):
+    periodo: Periodo
+    filas: list[dict[str, Any]]
+    criterio: str

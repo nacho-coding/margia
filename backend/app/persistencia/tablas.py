@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     String,
@@ -183,5 +184,57 @@ class Modelo(Base):
     snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshot.id"), index=True)
     version: Mapped[str] = mapped_column(String(30))
     checksum_datos: Mapped[str] = mapped_column(String(64))
+    resultado: Mapped[dict] = mapped_column(JSON)
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Experimento(Base):
+    __tablename__ = "experimento"
+    __table_args__ = (CheckConstraint("recorte >= 0 AND recorte <= 1"),)
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshot.id"), index=True)
+    tipo: Mapped[str] = mapped_column(String(30))
+    estado: Mapped[str] = mapped_column(String(30))
+    origen: Mapped[str] = mapped_column(String(120))
+    inicio_pre: Mapped[date] = mapped_column(Date)
+    inicio_post: Mapped[date] = mapped_column(Date)
+    fin: Mapped[date] = mapped_column(Date)
+    recorte: Mapped[float] = mapped_column(Float)
+    semilla: Mapped[int] = mapped_column(Integer)
+    protocolo: Mapped[dict] = mapped_column(JSON)
+
+
+class AsignacionExperimento(Base):
+    __tablename__ = "asignacion_experimento"
+    __table_args__ = (CheckConstraint("brazo IN ('control', 'tratamiento')"),)
+    experimento_id: Mapped[str] = mapped_column(ForeignKey("experimento.id"), primary_key=True)
+    mercado_id: Mapped[str] = mapped_column(ForeignKey("mercado.id"), primary_key=True)
+    par_id: Mapped[str] = mapped_column(String(20))
+    brazo: Mapped[str] = mapped_column(String(20))
+    probabilidad: Mapped[float] = mapped_column(Float)
+
+
+class ObservacionExperimento(Base):
+    __tablename__ = "observacion_experimento"
+    __table_args__ = (
+        ForeignKeyConstraint(["experimento_id", "mercado_id"],
+                             ["asignacion_experimento.experimento_id", "asignacion_experimento.mercado_id"]),
+        CheckConstraint("periodo IN ('pre', 'post')"),
+        CheckConstraint("pedidos >= 0 AND gasto_cent >= 0 AND presupuesto_cent >= 0"),
+    )
+    experimento_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    mercado_id: Mapped[str] = mapped_column(String(20), primary_key=True)
+    periodo: Mapped[str] = mapped_column(String(10), primary_key=True)
+    pedidos: Mapped[int] = mapped_column(Integer)
+    gasto_cent: Mapped[int] = mapped_column(BigInteger)
+    presupuesto_cent: Mapped[int] = mapped_column(BigInteger)
+
+
+class SimulacionSearch(Base):
+    __tablename__ = "simulacion_search"
+    id: Mapped[str] = mapped_column(String(60), primary_key=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshot.id"), index=True)
+    modelo_id: Mapped[str] = mapped_column(ForeignKey("modelo.id"))
+    entradas: Mapped[dict] = mapped_column(JSON)
     resultado: Mapped[dict] = mapped_column(JSON)
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

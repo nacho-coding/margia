@@ -11,6 +11,8 @@ from datetime import date, timedelta
 
 import numpy as np
 
+from app.datos.captura import estructura_mercados, probabilidades_captura
+
 VERSION = "mundo-1.0.0"
 SEMILLA = 260725
 CORTE = date.fromisoformat(os.environ.get("DEMO_CORTE", "2026-10-31"))
@@ -69,8 +71,7 @@ def generar(semilla: int = SEMILLA, corte: date = CORTE) -> Mundo:
     fechas = [corte - timedelta(days=729 - t) for t in range(730)]
     snapshot = f"aurel-{corte.isoformat()}-{semilla}-{VERSION}"
     regiones = ["Norte", "Centro", "Este", "Sur", "Oeste", "Insular"]
-    tamanos = estructura.uniform(0.65, 1.4, 24)
-    tamanos /= tamanos.mean()
+    tamanos, recuperacion = estructura_mercados(estructura)
     mercados = [dict(id=f"m{i+1:02}", nombre=f"{regiones[i//4]} · {i%4+1:02}",
                      region=regiones[i//4], tamano=round(float(tamanos[i]), 6),
                      grupo=f"estrato-{i%3+1}") for i in range(24)]
@@ -108,7 +109,6 @@ def generar(semilla: int = SEMILLA, corte: date = CORTE) -> Mundo:
     # SEM marca es captura; coeficiente de generación de demanda exactamente cero.
     coef = np.array([0, 9, 13, 5, 7, 3, 8, 4])
     escala = gasto.mean(axis=(0, 1)) / 100
-    recuperacion = estructura.uniform(.50, .95, 24)
     for t in range(730):
         stock = gasto[t] / 100 + .48*stock
         hill = stock / (stock + 2.1*escala)
@@ -116,10 +116,7 @@ def generar(semilla: int = SEMILLA, corte: date = CORTE) -> Mundo:
     base = (32*estacional[:, None] + 7*promocion[:, None]
             + 2.5*tiempo[:, None]/730)*tamanos
     oportunidades = (base + respuesta) * .30
-    p_paid = .43 * (gasto[:, :, 0] / (gasto[:, :, 0] + escala[0]*100))
-    p_org = (.33 + recuperacion[None, :]*.20) * (1-p_paid)
-    p_direct = .19*(1-p_paid)
-    p_loss = 1-p_paid-p_org-p_direct
+    p_paid, p_org, p_direct, p_loss = probabilidades_captura(gasto[:, :, 0], escala[0]*100, recuperacion[None, :])
     assert np.all(p_loss >= 0)
     media_pedidos = (base + respuesta)*.70 + oportunidades*(p_paid+p_org+p_direct)
     pedidos = negocio_rng.poisson(media_pedidos)
