@@ -1,6 +1,6 @@
 # Creatividad: biblioteca y pretest contextual
 
-Método del hito D4.1 del backlog. Datos enteramente sintéticos; corte 31/10/2026. Prepara una hipótesis visual y la guarda. La extensión A/B y su aprendizaje de CTR, implementados en D4.2, se describen en [experimentos_ab.md](experimentos_ab.md). Orquestación de escenarios pendiente en D4.3; efecto sobre pedidos propios todavía no identificado.
+Método del hito D4.1 del backlog. Datos enteramente sintéticos; corte 31/10/2026. Prepara una hipótesis visual y la guarda. La extensión A/B y su aprendizaje de CTR se describen en [experimentos_ab.md](experimentos_ab.md). D4.3 incorpora la selección a [escenarios](escenarios.md) con su referencia y coste; el efecto sobre pedidos propios sigue sin identificar.
 
 ## Datos y alcance
 
@@ -78,13 +78,13 @@ El formulario recoge canal, perfil, audiencia, frecuencia, impresiones y objetiv
 
 Python calcula CTR contextual, bandas y esperanza de clics (`impresiones × CTR`), y compone el brief por reglas con el placement. Las tres propuestas comparten **la misma referencia**: no hay efecto diferencial visual identificado ni ganador predictivo. El formato adaptado tampoco tiene observaciones propias, y el CTR contextual no estima su efecto. La banda de esperanza no es un intervalo de conteos futuros.
 
-Guardar una propuesta crea una selección inmutable, consultable al recargar y en el historial. Es una hipótesis que enlaza al diseño A/B; no activa medios ni modifica ventas. `multiplicador_demanda=1`, `efecto_identificado=false`. No se incorpora todavía a un escenario.
+Guardar una propuesta crea una selección inmutable, consultable al recargar y en el historial. Es una hipótesis que enlaza al diseño A/B y a escenarios; no activa medios ni modifica ventas. `multiplicador_demanda=1`, `efecto_identificado=false`. B conserva su recurso/contexto/versiones, referencia CTR y coste de producción indicado, sin atribuir nuevos pedidos al creativo.
 
 ## Aprendizaje experimental posterior
 
 D4.2 añade una prueba A/B real dentro del mundo sintético: protocolo congelado, dos o tres brazos, asignación aleatoria, observaciones nuevas, denominadores, costes, intervalos y aceptación con guardrails. No identifica un efecto real de las fotografías fuera de esta demo. El pretest muestra el CTR experimental actualizado en una sección separada solo cuando coinciden contexto y recursos exactos; no reescribe el resultado histórico ni cambia el predictor `creatividad-1.0.0`.
 
-El aprendizaje conserva conteos y versiones, acepta evidencia nula/adversa compatible y sustituye sin acumular ramas dependientes. El multiplicador económico permanece en 1 incluso después de aceptar: un cambio de CTR/CVR no identifica pedidos propios ni contribución. Método, inferencia, API y límites en [experimentos_ab.md](experimentos_ab.md). La integración de escenarios sigue en D4.3.
+El aprendizaje conserva conteos y versiones, acepta evidencia nula/adversa compatible y sustituye sin acumular ramas dependientes. El multiplicador económico permanece en 1 incluso después de aceptar: un cambio de CTR/CVR no identifica pedidos propios ni contribución. Método, inferencia, API y límites en [experimentos_ab.md](experimentos_ab.md). Las comparaciones de escenarios guardan la versión consultada; una actualización posterior no reescribe su referencia histórica.
 
 ## Persistencia y API
 

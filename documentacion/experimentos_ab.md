@@ -53,7 +53,7 @@ Estados persistentes: diseñado → simulado → evaluado → aceptado. Repetir 
 
 `creatividad-ab-1.0.0` guarda un artefacto por evidencia y contexto exacto, con conteos, contrastes, draws, semilla, checksum y modelo anterior. Se **sustituye** evidencia, sin pooling entre ramas que pueden compartir oportunidades/mecanismo. Una copia idéntica reutiliza la versión sin estrechar incertidumbre; un diseño anterior a una actualización no puede sobrescribirla. La cadena de modelos determina el vigente sin usar timestamps; una cadena ambigua se bloquea. Los modelos anteriores siguen consultables.
 
-El pretest presenta el CTR experimental en una sección separada cuando coinciden snapshot, canal, audiencia, frecuencia, categoría y recursos/textos versionados. No altera el JSON guardado ni el predictor histórico `creatividad-1.0.0`; las propuestas no probadas mantienen su referencia histórica. No se transporta a otros contextos ni se declara efecto económico. Orquestación de escenarios/optimización permanece en D4.3.
+El pretest presenta el CTR experimental en una sección separada cuando coinciden snapshot, canal, audiencia, frecuencia, categoría y recursos/textos versionados. No altera el JSON guardado ni el predictor histórico `creatividad-1.0.0`; las propuestas no probadas mantienen su referencia histórica. No se transporta a otros contextos ni se declara efecto económico. D4.3 conserva esta referencia/versiones y el coste de producción en [escenarios](escenarios.md), manteniendo multiplicador económico 1.
 
 ## Persistencia, API e interfaz
 

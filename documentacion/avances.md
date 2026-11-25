@@ -353,3 +353,56 @@ Incidencias corregidas: primer build con props incorrectas de `ModuleLink`; prim
 - **Días 1–3 y D4.1–D4.2 verificados.** Siguiente D4.3: orquestador común base/ahorro/reinversión, draws compartidos, restricciones, costes y optimización factible con opción mantener. El MMM sigue bloqueando recomendaciones de reparto por sensibilidad; no se relaja ese diagnóstico ni se aplica un multiplicador económico desde CTR.
 - Día 5: CRUD de escenarios, ejecuciones inmutables, decisiones con motivo y exportaciones; incidencias/restauración y recorrido integrado. Día 6: congelación, regresión A01–A14, rendimiento, revisión visual, secretos/licencias y presentación. P1/P2 aplazados. No se declara cerrado el Día 4 ni la POC.
 - Modern Web Guidance `forms` aplicada; trabajo secuencial del propio Codex, sin agentes, subagentes ni delegación.
+
+## 25/11/2026 · Inicio de orquestación y reinversión (D4.3)
+
+- Inspección: `main` limpio en `caf532d`, origin correcto y fetch sin divergencias. Servicios principales saludables y C: con 2,64 GiB libres. Releídos los seis contratos, instrucciones permanentes, avances y backlog. Trabajo propio secuencial, sin agentes.
+- Tareas: proyección nacional de 28 días con estacionalidad observada, comparador común base/ahorro/reinversión, costes una sola vez, 200 draws compartidos, presupuestos dentro del soporte, búsqueda determinista con riesgo y opción mantener. Selección creativa trazable y coste de producción; multiplicador económico 1. Ejecuciones inmutables guardadas, interfaz real y navegación desde Search/creatividad/medición.
+- Decisión contractual: usar la alternativa de deltas agregados no solapados: respuesta de demanda de siete canales y cambio de captura SEM marca separado. No leer parámetros del mundo ni sumar SEM al MMM. Interacciones no identificadas declaradas. El MMM actual sigue bloqueado/no optimizable; su reinversión será hipótesis y la búsqueda automática excluirá esa dependencia, conservando las opciones Search respaldadas. La asignación con curvas habilitadas se verificará con fixtures explícitas, sin alterar el artefacto de la demo.
+- Base: referencia estacional a 52 semanas, ajustada por nivel reciente; ticket/margen por pedido y perfil de inversión fijos desde los últimos 28 días. Ruido por bloques de errores históricos del predictor base calculados solo antes del holdout, separado de parámetros MMM/Search y supuestos de transporte. Bandas condicionales, sin garantía de cobertura.
+- Pruebas previstas: nulo/costes/contratación, reconciliación por draw, semilla/ruido común, adstock inicial/soporte, sin doble SEM, selección y versiones, riesgo/negativo/inviabilidad de rejilla, bloqueo real del MMM/datos, API/persistencia/reset aislado, pytest/Ruff, lint/TypeScript/build, E2E/axe/capturas en cuatro tamaños. Todavía no se declaran ejecutadas para D4.3. D5 CRUD/decisiones/incidencias y D6 permanecen pendientes.
+- Modern Web Guidance `forms` y `responsive-table` consultadas para los controles y el comparador; sin nuevas dependencias de runtime ni recursos gráficos.
+
+## 25/11/2026 · D4.3 cerrado: comparación y búsqueda con restricciones
+
+### Implementado
+
+- Laboratorio de escenarios real: proyección nacional de 28 días, base/A ahorro/B reinversión, costes comparables, selección creativa congelada, presupuestos por canal, bandas/riesgo y waterfall reconciliado. Enlaces por ID desde evaluación Search y selección creativa; medición conserva el canal. Historial y filtros recuperan la ejecución guardada sin recalcular.
+- Orquestador único de deltas agregados: siete canales de demanda con stock reconstruido y cuatro pasos semanales; SEM marca solo en captura Search. Interacción no identificada declarada. El comparador económico común sirve también el contrato histórico Search, sin doble ahorro ni costes. Ticket/margen fijos desde la referencia observada.
+- Base estacional con nivel reciente, errores de train y cinco bloques reservados. Diagnóstico calculado: WAPE 1,2100 % frente a 2,5781 % naive, cuatro de cinco totales en banda; estado limitado, sin garantía de cobertura. No se fuerza calibración ni se lee verdad/futuro del generador.
+- Las mismas 200 réplicas para base/A/B y rejilla: vectores conjuntos MMM/Search y error base común. Media, p05/p50/p95 y fracción de pérdida condicionados a supuestos. La rejilla verifica límites, soporte semanal y riesgo, compara mantener/ahorro y no promete óptimo global. Sin candidato implica abstención, con base solo de referencia si incumple restricciones.
+- El MMM sigue **bloqueado/no optimizable**. B es hipótesis; la búsqueda automática excluye reinversión y considera opciones Search con evidencia suficiente. Un canal intacto no exige transportar una curva fuera de soporte; cualquier cambio sí conserva esa comprobación. La asignación completa se prueba con fixture explícita, sin habilitar el modelo real.
+- Creatividad conserva foto/placement/contexto, referencia CTR y versiones. El coste de producción cambia B una vez; **multiplicador económico 1**, incluso con A/B. No se suman pedidos creativos ni se reescriben resultados anteriores.
+- Migración aditiva 0005, `escenario`/`ejecucion`, entradas/revisión/modelos/semilla/huellas y matrices completas persistentes. Predeterminados y entradas explícitas se normalizan para reutilizar la misma ejecución. Sin nuevas dependencias ni recursos gráficos. Método y API: [escenarios.md](escenarios.md).
+
+### Pruebas y operación ejecutadas
+
+| Comando / comprobación | Resultado |
+|---|---|
+| QA desde volumen vacío `docker compose -p margia-escenarios-qa up -d --build --wait --wait-timeout 180` | Migraciones 0001–0005, seed y servicios saludables en localhost:3002 |
+| pytest nuevo inicial / regresión con código montado | 10 passed en 3,38 s / 99 passed en 27,50 s, 1 warning heredado |
+| Pruebas tras soporte/diagnóstico y normalización | 11 passed en 4,20 s; reenvío completo añadido, 11 passed en 4,71 s |
+| Ruff / lint / TypeScript | Correctos; lint final y comprobación TypeScript en build final |
+| Playwright completo `npm.cmd run test:e2e -- --trace off` en QA | 29 passed (3,0 min) |
+| Cuatro recorridos afectados finales `tests/escenarios.spec.ts --trace off` | 4 passed (35,9 s), tras normalizar entradas y términos en español |
+| Capturas/axe | Diseño/resultado en cuatro tamaños, regresión general y formatos fotográficos conservados; sin infracciones detectadas ni desbordamiento global; revisión manual escritorio/móvil |
+| `tests/operacion.py preparar` → reinicio → `verificar`, con `PYTHONPATH=/app` | Hechos, modelos/fechas, Search/geo, pretest/A-B y comparación con matrices/semilla/fecha exacta conservados; reenvío reutilizado sin otra ejecución |
+| `tests/operacion.py reset`, solo en QA | 41,601 s; mismo checksum, comparaciones eliminadas/404 y evidencia inicial restaurada |
+| `docker compose up -d --build --wait --wait-timeout 180` | Principal actualizada conservando volumen y todos sus datos |
+| `./scripts/comprobar.ps1` sobre imagen final principal | **100 passed, 1 warning en 32,49 s**; Ruff y salud correctos |
+| `docker compose exec -T backend alembic current` | 0005 (head) |
+| `docker compose -p margia-escenarios-qa down` | QA detenida sin borrar volumen; principal con tres servicios saludables y solo localhost:3000 publicado |
+
+Las repeticiones no se suman como pruebas únicas. Muestra de la fixture operativa: cálculo interno 0,0119 s y JSON completo 530.953 bytes; excluye consultas/escritura y no es un benchmark general. Comandos detallados, diagnósticos e incidencias en [validacion.md](validacion.md).
+
+Corregido durante QA: dependencia excesiva del soporte de canales intactos, nombres/imports de Ruff, etiquetas/tabla del desglose en móvil y normalización entero/decimal. El primer Playwright específico dio 3 passed/1 failed (30,9 s) por leer la URL antes de completar la navegación; corregida la espera y repetido el recorrido. No se cuenta como batería satisfactoria.
+
+La API principal confirma cero ejecuciones de QA, MMM bloqueado/no optimizable, modelo creativo original `creatividad-bfce2ee924571d327baa` y checksum `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. No se resetea la principal. C: queda con 2,61 GiB libres, sin ENOSPC ni caída Docker en este corte. Warnings heredados httpx y color Playwright; siguen los límites de transporte, muestras y ausencia de efecto económico creativo identificado.
+
+### Git y continuación
+
+- Backend probado: `6a6fe9e` — «feat: comparar escenarios con réplicas comunes y búsqueda restringida».
+- Interfaz probada: `8df5ebd` — «feat: incorporar comparador de escenarios y navegación por evidencia».
+- Fetch sin divergencias; push normal correcto (`caf532d..8df5ebd`). `git ls-remote origin refs/heads/main` confirma `8df5ebde6c601fd4f81f52951053a2e6351e0bc0`. Cierre documental separado; sin force ni cambios ajenos o de configuración global.
+- **Días 1–4 verificados con sus límites.** Siguiente D5.1: CRUD de borradores, duplicación/archivo, decisiones con motivo y exportaciones CSV/Markdown; persistencia de configuraciones/ejecuciones ya preparada. D5.2: incidencias y restauración. D5.3: recorrido completo con decisión y guion. D6: congelación, A01–A14, rendimiento, auditoría final y presentación. P1/P2 aplazados; no se declara POC terminada.
+- Modern Web Guidance `forms` y `responsive-table` aplicadas. Trabajo secuencial sin agentes, subagentes ni delegación.

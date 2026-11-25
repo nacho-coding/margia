@@ -46,7 +46,7 @@ El MMM solo usa siete canales de demanda; SEM marca sigue en los hechos observad
 
 ## Pendientes deliberados
 
-Orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D4.3–D5. Escenarios permanece identificado como en desarrollo. El pretest guarda hipótesis y muestra aprendizaje A/B contextual separado; la respuesta económica sigue en 1 mientras no exista efecto identificado sobre pedidos propios.
+CRUD completo de escenarios, decisiones/exportaciones e incidentes alternativos: backlog D5; congelación/aceptación final en D6. El comparador y la búsqueda acotada ya funcionan, con reinversión como hipótesis por el bloqueo del MMM. El efecto económico creativo sigue en 1 mientras no exista identificación sobre pedidos propios.
 
 ## One Search y radar
 
@@ -74,7 +74,7 @@ Migración 0004 añade `pretest_creativo` y `seleccion_creativa`. Evaluaciones p
 
 `app/creatividad/recursos.py` sirve el catálogo fotográfico versionado, con manifiesto de nueve WebP y 36 combinaciones de perfil/escena/placement. La biblioteca añade una recreación visual sin modificar el recurso ni los hechos históricos. El frontend compone formatos Meta/TikTok/Display/YouTube con metadatos del backend; el flujo de preparación espera la carga/decodificación real y el POST, identifica la simulación y conserva errores/reintentos. No hay IA de runtime ni vídeo generado.
 
-El pretest presenta tres escenas con referencia histórica contextual compartida y guarda una hipótesis. Conserva sin cambios los resultados y SVG de la versión anterior. El predictor histórico no identifica un ganador ni transforma CTR/CVR en pedidos. Multiplicador económico 1; sin integración de escenarios todavía. API, diagnóstico, denominadores y límites en [creatividad.md](creatividad.md).
+El pretest presenta tres escenas con referencia histórica contextual compartida y guarda una hipótesis. Conserva sin cambios los resultados y SVG de la versión anterior. El predictor histórico no identifica un ganador ni transforma CTR/CVR en pedidos. La selección se incorpora a B con su recurso, referencia y coste, manteniendo multiplicador económico 1. API, diagnóstico, denominadores y límites en [creatividad.md](creatividad.md).
 
 ## A/B creativo y aprendizaje de CTR
 
@@ -85,3 +85,13 @@ La aleatorización opera sobre oportunidades independientes, equilibradas por fe
 Wilson para tasas y Newcombe-Wilson para diferencias de CTR, con Bonferroni en los contrastes previstos contra control. MDE aproximado y costes calculados en Python. Los draws Beta de respuesta describen incertidumbre del parámetro; CVR es secundario condicionado al clic. Ninguna de esas cifras demuestra demanda propia.
 
 Una evaluación compatible puede crear `creatividad-ab-1.0.0` en el contexto exacto. La cadena conserva versiones, sustituye sin acumular ramas dependientes, reutiliza evidencia idéntica y rechaza diseños obsoletos. El pretest consulta este aprendizaje aparte del modelo histórico y su JSON inmutable. Las rutas geo/A/B filtran su tipo; reset/reinicio usan el mismo advisory lock. Contratos, fórmula, endpoints y límites en [experimentos_ab.md](experimentos_ab.md).
+
+## Orquestador común y ejecuciones
+
+`app/escenarios/servicio.py` carga hechos y versiones; `proyeccion.py` fija referencia nacional estacional y diagnóstico temporal; `motor.py` calcula base/A/B y todos los candidatos con las mismas 200 réplicas. Ninguno importa el mundo. Se conserva el checksum de negocio. Captura SEM y demanda de siete canales se separan como deltas agregados, con interacción no identificada declarada.
+
+El dominio `comparar_plan` concentra la valoración y es también la implementación del contrato histórico `comparar_captura`. El motor reconstruye stock desde gasto observado, avanza cuatro semanas y conserva vectores conjuntos MMM/Search. El error base común se cancela en deltas; familias independientes por supuesto, bandas condicionales. No se transforma el CTR en demanda.
+
+La rejilla impone techo, soporte por semana, límites de recorte/canal y riesgo. Mantener canales intactos no requiere extrapolar sus curvas. El MMM bloqueado sigue excluyendo reinversión; se permiten opciones Search según sus dependencias propias. Ningún candidato factible/elegible implica abstención, sin declarar un óptimo global ni forzar la base.
+
+Migración aditiva 0005: `escenario` y `ejecucion`, configuración/revisión y resultado inmutables por contenido. Entradas predeterminadas y explícitas se normalizan igual; nuevo modelo implica otra ejecución y no modifica las previas. Se conservan arrays completos en DB, se sirven resumen/huella por API y se usa el lock común con reset. GET no simula; el historial y los filtros recuperan la misma ejecución. Método, endpoints y límites en [escenarios.md](escenarios.md).

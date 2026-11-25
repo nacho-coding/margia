@@ -450,3 +450,70 @@ C: comenzó con 106,5 MiB libres. `Get-VHD` no obtuvo permisos Hyper-V; no se mo
 Avisos heredados httpx/TestClient y `NO_COLOR`/`FORCE_COLOR`. Inferencia nominal aproximada, oportunidades independientes, prior/percentiles condicionados, CVR seleccionado por clic, efectos latentes ilustrativos y transporte estricto. No se identifica beneficio, no se acumulan ramas y no se relaja el bloqueo de sensibilidad del MMM. D4.3, D5 y D6 pendientes; no se declara la aceptación completa A01–A14. Método y fuentes primarias en [experimentos_ab.md](experimentos_ab.md). Trabajo secuencial sin agentes.
 
 Cierre operativo: `docker compose -p margia-ab-qa down`, sin `-v`, correcto; los tres servicios principales siguen saludables en localhost:3000. GET de contexto/pretest/pruebas confirma el mismo checksum y predictor histórico y cero pruebas A/B de QA en la principal. Espacio final C: **2,58 GiB** libres. La interfaz final se despliega con `docker compose up -d --build --no-deps --wait --wait-timeout 120 frontend`; el backend conserva la imagen de sus 89 pruebas.
+
+## 25/11/2026 · Orquestador y búsqueda de escenarios (D4.3)
+
+### Backend, datos y matemáticas
+
+```powershell
+$env:MARGIA_PORT='3002'
+docker compose -p margia-escenarios-qa up -d --build --wait --wait-timeout 180
+docker compose -p margia-escenarios-qa exec -T backend python -m pytest -q -p no:cacheprovider tests/test_escenarios.py
+docker compose -p margia-escenarios-qa exec -T backend ruff check --no-cache .
+$env:MARGIA_PORT='3000'
+docker compose up -d --build --wait --wait-timeout 180
+./scripts/comprobar.ps1
+docker compose exec -T backend alembic current
+```
+
+- Migraciones 0001–0005 correctas desde volumen QA vacío; 0005 aditiva aplicada también sobre la principal conservando sus datos. `alembic current`: **0005 (head)**. Sin dependencias/lockfiles nuevos.
+- Primera batería nueva: **10 passed, 1 warning en 3,38 s**; regresión entonces completa con código montado: **99 passed, 1 warning en 27,50 s**. Tras corregir la dependencia de canales intactos y añadir su regresión: **11 passed, 1 warning en 4,20 s** en QA. La normalización de predeterminados añade una aserción de reenvío completo: **11 passed en 4,71 s** con código montado. Ruff final correcto.
+- Verificador oficial contra la imagen final principal: **100 passed, 1 warning en 32,49 s**, Ruff y salud correctos. Los resultados anteriores son checkpoints; no se suman a las 100 pruebas únicas.
+- Contratos: N/ventas/coste/margen/contribución reconciliados por draw, nulo con delta cero en las 200 réplicas, cuota común/contratación, producción/prueba/otros una vez, semilla, stock inicial con fórmula cerrada, sin SEM en demanda, ausencia de mundo/verdad, soporte semanal y presupuesto. Rejilla habilitada por fixture explícita, mejor candidato factible y caso negativo/riesgo excesivo/sin candidato. El artefacto MMM real no se modifica ni habilita.
+- API: GET sin crear ejecuciones, POST idéntico y reenvío de configuración completa reutilizan ID/resultado, calendario posterior al corte, selección/canal/recursos/versiones, equivalencia puntual con Search, aprendizaje posterior que crea otra ejecución conservando la anterior, validación y bloqueo crítico que permite consultar histórico. Fixtures aisladas por transacción/savepoint.
+
+Proyección: cinco bloques reservados entre 14/06 y 31/10, WAPE **1,2100 %** frente a **2,5781 %** del naive estacional; MAE **419,584** frente a **894 pedidos/bloque**, sesgo **−0,2876 %**. Cuatro de cinco totales en banda, **80 % descriptivo**; estado limitado y sin garantía de cobertura. Errores calculados solo hasta train, sin fuga. Fórmula, unidades, hipótesis y fuentes primarias en [escenarios.md](escenarios.md).
+
+### Interfaz y navegador
+
+```powershell
+# Desde frontend, contra QA aislada:
+npm.cmd run lint
+npm.cmd run typecheck
+$env:MARGIA_QA_URL='http://127.0.0.1:3002'
+npm.cmd run test:e2e -- tests/escenarios.spec.ts --trace off
+npm.cmd run test:e2e -- --trace off
+```
+
+- Lint y TypeScript correctos; lint final repetido y build final con TypeScript. Builds de producción QA y principal correctos.
+- Regresión completa: **29 passed (3,0 min)**. Tras normalizar entradas y ajustar términos a español, los cuatro recorridos afectados se repiten con validación de producción sin propuesta y enlace desde medición: **4 passed (35,9 s)**. Sin contar repeticiones como pruebas únicas.
+- Search guardado → contexto por ID → comparación → búsqueda limitada → tabla/waterfall/método → recarga y cambio global sin reejecutar. Creatividad con A/B → selección/foto → B con coste de producción: cambiar CTR no cambia pedidos; el coste sí cambia el delta una vez. Medición conserva el canal real al enlazar.
+- Validación nativa, error HTTP recuperable con foco/inputs, ámbito nacional y techo cero con ausencia de candidato; la base no se declara factible por defecto. Ninguna aprobación ni activación fingida.
+- Diseño/resultado en **1440×900, 1920×1080, 1280×720 y 390×844**; regresión general y cuatro plataformas fotográficas conservadas. Axe WCAG A/AA/2.1 AA sin infracciones detectadas ni desbordamiento global. Revisión manual escritorio/móvil: etiquetas del gráfico legibles, importes del desglose visibles en móvil, tablas comparativas con scroll local y cabeceras fijas. No es auditoría humana de lector de pantalla.
+- Modern Web Guidance: he aplicado `forms` con validación nativa/API, fieldset/legend, foco y bloqueo solo durante POST (“DON'T disable submit buttons to block validation”); `responsive-table`, cabeceras semánticas/fijas y scroll enfocable con propiedades lógicas/z-index (“Use logical properties and explicit z-index values”). Se mantiene comparación por columnas en las tablas densas.
+
+### Operación y conservación de historia
+
+```powershell
+$env:MARGIA_PORT='3002'
+docker compose -p margia-escenarios-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py preparar
+docker compose -p margia-escenarios-qa restart db backend
+docker compose -p margia-escenarios-qa up -d --wait --wait-timeout 120 db backend
+docker compose -p margia-escenarios-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py verificar
+docker compose -p margia-escenarios-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py reset
+docker compose -p margia-escenarios-qa down
+```
+
+Preparación, reinicio y verificación correctos: modelos/fechas originales, hechos, Search/geo, pretest/A-B y comparación exacta, incluidas las matrices internas de 200 réplicas. Reenvío de entradas completas devuelve la misma ejecución sin calcular otra. Reset aislado **41,601 s**: mismo checksum, evidencia inicial restaurada y comparaciones de usuario eliminadas/404. QA detenida sin `-v`; principal sin reset y con tres servicios saludables, solo localhost:3000 publicado.
+
+Muestra operativa guardada: cálculo interno de la comparación **0,0119 s**, resultado JSON completo **530.953 bytes**. No incluye consultas/escritura ni es un benchmark general de la rejilla habilitada. La matriz de rendimiento completa permanece en D6.
+
+### Incidencias, límites y estado final
+
+- Primera revisión: el soporte del MMM se aplicaba también a Display/TikTok intactos fuera de train, descartando incorrectamente el ahorro Search. Se separa conservación del punto actual de cambios: estos siguen validándose por semana. Nueva regresión lo verifica; no se relaja el diagnóstico de sensibilidad.
+- Primer Playwright específico: **3 passed, 1 failed (30,9 s)** por leer la URL antes de finalizar la navegación desde Search. El enlace funcionaba; se añade espera de URL real. No se cuenta esa batería como satisfactoria. También se corrigen etiquetas solapadas/tabla de desglose en móvil, advertidas en revisión manual, y estilo de nombres/imports detectado por Ruff antes de los resultados finales.
+- Se valida también el valor predeterminado de cada campo para evitar IDs diferentes entre números enteros/decimales al reenviar una configuración guardada. Regresión y prueba operativa de reutilización correctas.
+
+La API principal confirma checksum **`6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`**, modelo creativo **`creatividad-bfce2ee924571d327baa`**, MMM **bloqueado/no optimizable** y cero ejecuciones de QA. C: con **2,61 GiB** libres al cierre, sin ENOSPC ni caída de Docker en este corte. Se conservan warnings heredados httpx/TestClient y color Playwright. Revisión del nuevo código sin coincidencias de patrones de credenciales/datos privados; la auditoría completa sigue en D6.
+
+**Días 1–4 verificados con sus límites.** D5 CRUD/decisiones/exportaciones, incidencias/restauración y recorrido integrado/guion; D6 congelación, A01–A14, rendimiento, accesibilidad final y presentación. No se declara POC acabada. Sin agentes ni delegación.

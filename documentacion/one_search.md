@@ -28,6 +28,8 @@ El umbral de equilibrio se expresa como **máxima pérdida de pedidos asumible**
 
 Primer radar: una hipótesis de marca completa con ID persistente en el modelo, los 32 grupos elegibles reales, impacto central, banda, riesgo y coste. Los grupos se solapan y no se suman como oportunidades independientes. La prioridad actual tiene una sola candidata; el criterio se explica. Si delta ≤0, riesgo >10 %, placebo o datos bloqueados, ámbito/horizonte no comparables o recorte extrapolado, recomienda mantener/no actuar. Un resultado favorable invita a contrastar en un nuevo experimento; no aprueba ni activa medios. El radar y el simulador llaman a la misma valoración Python.
 
+D4.3 añade el enlace desde una evaluación guardada a [escenarios](escenarios.md), conservando su ID y parámetros. Se recalcula sobre una proyección nacional de 28 días con la evidencia vigente, indicando también el modelo de origen. La alternativa de ahorro utiliza el mismo comparador económico que Search; reinvertir depende del MMM y permanece fuera de la búsqueda automática mientras esté bloqueado. Las ejecuciones anteriores siguen consultables.
+
 ## Persistencia y API
 
 Migración 0003: `experimento`, `asignacion_experimento`, `observacion_experimento` y `simulacion_search`, con claves y FK por grano. Evidencia y modelo Search se preparan al arrancar, bajo advisory lock, sin regenerar al navegar. No se sobrescriben observaciones al completar los metadatos de semilla del prototipo.
