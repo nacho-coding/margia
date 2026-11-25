@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState,type FormEvent} from "react";
 import {useRouter} from "next/navigation";
+import Link from "next/link";
 import {ArrowRight,Check,FlaskConical,ImagePlus,LoaderCircle} from "lucide-react";
 import {Badge,Notice} from "@/components/ui";
 import {CreativeArt} from "@/components/creative-art";
@@ -9,6 +10,7 @@ import {ErrorState} from "@/components/error-state";
 import {numero,porcentaje,post} from "@/services/api";
 import {useRemote} from "@/services/use-remote";
 import type {CreativeCatalog,CreativeEvaluation,CreativeSelection,CreativeVariant} from "@/services/creatividad";
+import {AprendizajeCreativo} from "@/features/ab";
 
 async function prepararImagenes(variantes:CreativeVariant[]){
   await Promise.all(variantes.map(async v=>{
@@ -17,12 +19,12 @@ async function prepararImagenes(variantes:CreativeVariant[]){
   }));
 }
 
-function Selection({id,evaluationId}:{id:string;evaluationId:string}){
+function Selection({id,evaluationId,query}:{id:string;evaluationId:string;query:string}){
   const r=useRemote<CreativeSelection>(`creativos/selecciones/${id}`);
   if(r.error)return <ErrorState message={r.error} retry={r.retry}/>;
   if(!r.data)return <p role="status">Consultando selección guardada…</p>;
   if(r.data.pretest_id!==evaluationId)return <Notice>La selección pertenece a otra evaluación. Abre el pretest correspondiente desde el historial.</Notice>;
-  return <section className="creative-selection" data-testid="seleccion-creativa"><Check size={18}/><div><strong>Hipótesis creativa guardada</strong><p>{r.data.variante_id} · {r.data.motivo}</p><p className="checksum">{r.data.id}</p><p>No activa publicidad. Multiplicador de demanda: {numero(r.data.multiplicador_demanda,1)}.</p></div></section>;
+  return <section className="creative-selection" data-testid="seleccion-creativa"><Check size={18}/><div><strong>Hipótesis creativa guardada</strong><p>{r.data.variante_id} · {r.data.motivo}</p><p className="checksum">{r.data.id}</p><p>No activa publicidad. Multiplicador de demanda: {numero(r.data.multiplicador_demanda,1)}.</p><Link className="text-link" href={`/creatividad?${query}&vista=ab&evaluacion=${evaluationId}&variante=${r.data.variante_id}`}>Contrastar selección en A/B<ArrowRight size={13}/></Link></div></section>;
 }
 
 export function Workbench({data,query,initial,selectionId}:{data:CreativeCatalog;query:string;initial?:CreativeEvaluation;selectionId:string|null}){
@@ -79,9 +81,11 @@ export function Workbench({data,query,initial,selectionId}:{data:CreativeCatalog
       <div className="creative-comparison" aria-label="Tres composiciones originales">{r.variantes.map((v,i)=><article className="creative-variant" key={v.id} data-testid="variante-pretest">
         <div className="creative-variant-number">Propuesta {i+1} · {v.categoria}<span>{v.plataforma?.tipo||"Composición original"}</span></div>
         <CreativeArt variant={v} priority={i===0}/>
-        <div className="creative-variant-body"><h3>{v.nombre}</h3><p>{v.composicion}</p><dl><dt>Tono</dt><dd>{v.tono}</dd><dt>CTA</dt><dd>{v.cta}</dd></dl><p className="small">Efecto diferencial pendiente de prueba</p><button type="button" className="button secondary" disabled={selecting} onClick={()=>select(v.id)}>Guardar propuesta {i+1}<ArrowRight size={14}/></button></div>
+        <div className="creative-variant-body"><h3>{v.nombre}</h3><p>{v.composicion}</p><dl><dt>Tono</dt><dd>{v.tono}</dd><dt>CTA</dt><dd>{v.cta}</dd></dl><p className="small">Referencia histórica, sin efecto visual en el predictor</p><button type="button" className="button secondary" disabled={selecting} onClick={()=>select(v.id)}>Guardar propuesta {i+1}<ArrowRight size={14}/></button></div>
       </article>)}</div>
-      {selectionId&&<Selection id={selectionId} evaluationId={r.id}/>}
+      {selectionId&&<Selection id={selectionId} evaluationId={r.id} query={query}/>}
+      <div className="ab-entry"><p>Contrasta estas propuestas con observaciones nuevas y asignación aleatoria.</p><Link className="button secondary" href={`/creatividad?${query}&vista=ab&evaluacion=${r.id}`}>Preparar prueba A/B<FlaskConical size={15}/></Link></div>
+      <AprendizajeCreativo pretest={r} query={query}/>
       <div className="creative-result-heading"><h2>Referencia del contexto evaluado</h2><Badge tone={r.estado==="bloqueado"?"warning":"neutral"}>{r.estado==="bloqueado"?"Predictor bloqueado":"Hipótesis"}</Badge></div>
       <div className="model-metrics creative-estimates"><article><small>CTR de referencia compartido</small><strong data-testid="ctr-pretest">{porcentaje(r.referencia.ctr,2)}</strong><p>p05–p95: {porcentaje(r.referencia.p05,2)} — {porcentaje(r.referencia.p95,2)}</p></article><article><small>Clics de referencia</small><strong data-testid="clics-pretest">{numero(r.referencia.clics_esperados)}</strong><p>Sobre {numero(r.entradas.impresiones)} impresiones</p></article><article><small>CVR observado de entrenamiento</small><strong>{porcentaje(r.referencia.cvr_observado,2)}</strong><p>{numero(r.referencia.cvr_conversiones)} conversiones / {numero(r.referencia.cvr_clics)} clics</p></article><article><small>Diferencia visual identificada</small><strong>Sin evidencia</strong><p>El modelo no distingue estas composiciones</p></article></div>
       <p className="creative-run-status">{r.referencia.fuente}. Bandas de parámetros por grupos; no son intervalos de nuevos clics.</p>

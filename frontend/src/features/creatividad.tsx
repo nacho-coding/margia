@@ -10,6 +10,7 @@ import {fecha,numero,porcentaje} from "@/services/api";
 import {useRemote} from "@/services/use-remote";
 import type {CreativeCatalog,CreativeEvaluation,CreativeHistory} from "@/services/creatividad";
 import {Workbench} from "@/features/pretest-creativo";
+import {ABWorkspace} from "@/features/ab";
 import {BibliotecaCreativa} from "@/features/views";
 
 function Method({data,onClose}:{data:CreativeCatalog;onClose:()=>void}){
@@ -41,9 +42,9 @@ export function Creatividad({query}:{query:string}){
   const [method,setMethod]=useState(false);
   if(r.error)return <ErrorState message={r.error} retry={r.retry}/>;
   if(!r.data)return <Loading/>;
-  const d=r.data,id=search.get("evaluacion"),selectionId=search.get("seleccion"),pretest=search.get("vista")==="pretest"||!!id;
-  return <div className="creative-workspace"><div className="creative-viewbar"><nav aria-label="Vistas de creatividad"><Link className={`button ${pretest?"secondary":"primary"}`} aria-current={!pretest?"page":undefined} href={`/creatividad?${query}&vista=biblioteca`}>Biblioteca observada</Link><Link className={`button ${pretest?"primary":"secondary"}`} aria-current={pretest?"page":undefined} href={`/creatividad?${query}&vista=pretest`}>Preparar pretest</Link></nav><button type="button" className="button secondary" onClick={()=>setMethod(true)}><BookOpen size={15}/>Método y validación</button></div>
-    {pretest?<>{id?<Saved id={id} data={d} query={query} selectionId={selectionId}/>:<Workbench data={d} query={query} selectionId={null}/>}<History key={`${id}:${selectionId}`} query={query}/></>:<BibliotecaCreativa query={query} catalogo={d}/>}
+  const d=r.data,id=search.get("evaluacion"),selectionId=search.get("seleccion"),ab=search.get("vista")==="ab",pretest=!ab&&(search.get("vista")==="pretest"||!!id);
+  return <div className="creative-workspace"><div className="creative-viewbar"><nav aria-label="Vistas de creatividad"><Link className={`button ${!pretest&&!ab?"primary":"secondary"}`} aria-current={!pretest&&!ab?"page":undefined} href={`/creatividad?${query}&vista=biblioteca`}>Biblioteca observada</Link><Link className={`button ${pretest?"primary":"secondary"}`} aria-current={pretest?"page":undefined} href={`/creatividad?${query}&vista=pretest`}>Preparar pretest</Link><Link className={`button ${ab?"primary":"secondary"}`} aria-current={ab?"page":undefined} href={`/creatividad?${query}&vista=ab`}>Pruebas A/B</Link></nav><button type="button" className="button secondary" onClick={()=>setMethod(true)}><BookOpen size={15}/>Método y validación</button></div>
+    {ab?<ABWorkspace key={search.get("prueba")||id||"nuevo"} query={query} pretestId={id} trialId={search.get("prueba")} preferred={search.get("variante")}/>:pretest?<>{id?<Saved id={id} data={d} query={query} selectionId={selectionId}/>:<Workbench data={d} query={query} selectionId={null}/>}<History key={`${id}:${selectionId}`} query={query}/></>:<BibliotecaCreativa query={query} catalogo={d}/>}
     {method&&<Method data={d} onClose={()=>setMethod(false)}/>}
   </div>;
 }

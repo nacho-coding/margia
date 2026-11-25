@@ -50,7 +50,7 @@ export function Workspace() {
     const next=new URLSearchParams(query); if(value) next.set(name,value); else next.delete(name);
     if(path==="/one-search"&&search.get("hipotesis"))next.set("hipotesis",search.get("hipotesis")!);
     if(path==="/experimentos"&&search.get("experimento"))next.set("experimento",search.get("experimento")!);
-    if(path==="/creatividad")for(const key of ["vista","evaluacion","seleccion"])if(search.get(key))next.set(key,search.get(key)!);
+    if(path==="/creatividad")for(const key of ["vista","evaluacion","seleccion","prueba","variante"])if(search.get(key))next.set(key,search.get(key)!);
     router.replace(`${path}?${next.toString()}`,{scroll:false});
   };
   return <div className={`workspace ${collapsed?"collapsed":""} ${mobileOpen?"mobile-open":""}`}>
