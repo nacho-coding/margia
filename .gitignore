@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+node_modules/
+.next/
+out/
+dist/
+coverage/
+playwright-report/
+test-results/
+artifacts/
+*.tsbuildinfo
+*.dump
+*.sql.gz
+.DS_Store
+Thumbs.db
+# Instalación local de skills; procedencia fijada en skills-lock.json.
+.agents/skills/

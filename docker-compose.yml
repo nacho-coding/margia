@@ -1,0 +1,60 @@
+name: margia
+services:
+  db:
+    image: postgres:18-alpine@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71
+    environment:
+      POSTGRES_DB: margia
+      POSTGRES_USER: margia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ejecuta scripts/iniciar.ps1 para crear la configuracion local}
+    volumes:
+      - datos_postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U margia -d margia"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+    mem_limit: 1g
+    networks: [datos]
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://margia:${POSTGRES_PASSWORD}@db:5432/margia
+      DEMO_CORTE: ${DEMO_CORTE:-2026-10-31}
+      OPENBLAS_NUM_THREADS: 2
+      OMP_NUM_THREADS: 2
+    depends_on:
+      db: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 120s
+      retries: 12
+    restart: unless-stopped
+    mem_limit: 2g
+    networks: [datos, aplicacion]
+  frontend:
+    build: ./frontend
+    environment:
+      API_ORIGIN: http://backend:8000
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - "127.0.0.1:${MARGIA_PORT:-3000}:3000"
+    depends_on:
+      backend: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+    restart: unless-stopped
+    mem_limit: 1g
+    networks: [aplicacion]
+volumes:
+  datos_postgres:
+networks:
+  datos:
+    internal: true
+  aplicacion:
