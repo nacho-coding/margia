@@ -265,3 +265,41 @@ Un rebuild intermedio falló con E/S de caché Turbopack y Docker se detuvo. Se 
 - **Días 1–3 y D4.1 verificados.** Siguiente: D4.2 A/B creativo aleatorio con denominadores, incertidumbre, coste, multiplicidad y actualización versionada; después D4.3 orquestador base/ahorro/reinversión y optimización factible. El reparto MMM continúa bloqueado por sensibilidad, sin relajar umbrales.
 - Día 5: CRUD de escenarios, ejecuciones/decisiones/exportaciones, incidencias/restauración y recorrido integrado. Día 6: congelación, regresión A01–A14, rendimiento, revisión visual, secretos/licencias y presentación. P1/P2 aplazados; no se declara completo el Día 4 ni la POC.
 - Método completo: [creatividad.md](creatividad.md). Modern Web Guidance `forms` aplicada con validación nativa/API, foco, textarea redimensionable y submit bloqueado solo durante POST real. Sin agentes/subagentes, datos reales, LLM, GPU ni dependencias de runtime nuevas.
+
+## 25/11/2026 · Inicio de revisión fotográfica y adaptación por plataforma
+
+- Solicitud del usuario: sustituir el aspecto de boceto por ejemplos realistas y adaptados a TikTok, Meta, Display y YouTube; preparación simulada permitida. Árbol limpio en `main`, HEAD `589d0df`, origin correcto y fetch sin divergencias. Releídos los contratos y el estado verificado; trabajo secuencial sin agentes.
+- Tareas: nueve imágenes fotográficas sintéticas mediante Imagegen durante el desarrollo, empaquetado WebP ligero y local, composiciones específicas por placement, integración en biblioteca/pretest, preparación visual con carga/decodificación reales y aviso discreto de catálogo precreado. Conservar rutas antiguas, modelos, resultados guardados y checksum del negocio.
+- Pruebas previstas: versiones/placements y metadatos por canal en API, conservación de evaluaciones anteriores, carga de todas las imágenes y proporciones, cambio de plataforma, preparación/error/reintento, móvil y reduced-motion, pytest/Ruff, lint/TypeScript/build y Playwright/axe/capturas. No se declaran todavía ejecutadas las comprobaciones de este incremento.
+- Skills: Imagegen integrada y Modern Web Guidance `optimize-image-priority` / `responsive-design`. Sin dependencias nuevas de IA ni llamadas generativas de runtime. La simulación se identifica como tal, sin alterar estimaciones ni fingir evidencia de rendimiento de las fotografías nuevas.
+
+## 25/11/2026 · Revisión fotográfica por plataforma verificada
+
+- Nueve fotografías sintéticas generadas con Imagegen durante el desarrollo: producto, material y uso en hogar/moda/belleza. Empaquetadas localmente como WebP (1.047.498 bytes total, máximo 169.146 por imagen), con dimensiones/hash/procedencia y prompts exactos conservados. La segunda pasada del empaquetador mantiene los bytes; rechaza sobrescribir una ruta versionada con contenido distinto. Los PNG pesados y rutas locales no se publican.
+- Catálogo de 36 composiciones posibles, tres por perfil y plataforma. Meta 4:5, TikTok 9:16, Display 1200:628 y YouTube 16:9 con tratamientos propios; los dos canales de vídeo muestran fotogramas estáticos. La biblioteca muestra recreaciones señaladas y permite consultar la composición histórica. No se modifican los hechos ni las métricas para aparentar que las fotografías ya tuvieron rendimiento.
+- «Generar propuestas de ejemplo»: preparación simulada con carga/decodificación real, estados, error/reintento, foco y bloqueo de controles solo durante trabajo. Después presenta imágenes, referencia calculada, brief y selección. Cambiar de plataforma retira las propuestas anteriores hasta preparar el nuevo contexto. Imágenes sintéticas/precreadas identificadas, sin llamadas IA fingidas en runtime ni progreso inventado.
+- Rutas y versiones nuevas `fotografia-2.0.0` / `composicion-2.0.0`. Evaluaciones/selecciones anteriores y sus SVG conservados exactamente. Modelo creativo, semilla, particiones y parámetros sin cambios; multiplicador 1 y sin ganador visual identificado. A/B y escenarios mantienen su alcance pendiente.
+
+| Comando / comprobación | Resultado |
+|---|---|
+| Imagegen integrada | Nueve imágenes generadas e inspeccionadas; prompts en `documentacion/creatividad_prompts.json` |
+| `node scripts/preparar_imagenes.mjs`, dos pasadas | Nueve WebP locales, hashes/tamaños verificados, sin dependencia nueva |
+| pytest con código montado / Ruff | 78 passed, 1 warning en 22,63 s; Ruff correcto |
+| `npm.cmd run lint` / `typecheck` | Correctos |
+| Builds Docker de QA y principal | Correctos, servicios saludables, persistencia conservada |
+| Playwright creativo inicial | 6 passed (40,4 s), antes del ajuste final de encuadre Meta |
+| Regresión completa final `npm.cmd run test:e2e -- --trace off` en QA | 22 passed (2,1 min), capturas y accesibilidad activas |
+| Capturas / revisión visual | Biblioteca, cuatro tamaños del pretest, cuatro placements escritorio/móvil y tres perfiles; axe sin infracciones detectadas ni desbordamiento global |
+| `./scripts/comprobar.ps1` contra imagen final | 78 passed, 1 warning en 22,69 s; Ruff y salud correctos |
+| Operación QA preparar → reinicio → verificar | Modelo, texto, recursos, placement, pretest y selección exactos; sin reentrenar |
+| `docker compose -p margia-creatividad-qa down` | Pila aislada detenida sin borrar volumen; principal saludable en localhost:3000 |
+
+Checksum original intacto: `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`; modelo `creatividad-bfce2ee924571d327baa`, versión `creatividad-1.0.0`, limitado. No hay migraciones nuevas ni reset de la demo principal. El reset de D4.1 no se repite en esta revisión visual.
+
+Una regresión previa dio 21 passed/1 failed por `ENOSPC` al guardar capturas y trazas, no se cuenta como satisfactoria. Se retiró solo caché `.next` del proyecto tras verificar su ruta (36,96 MiB); la repetición completa sin grabación de trazas pasa manteniendo screenshots y axe. C: sigue con unos 130 MiB libres: riesgo de entorno abierto. Sin borrar volúmenes, datos ni fotografías. Avisos heredados httpx y color de Playwright permanecen. Detalles, fuentes de formato y límites en [validacion.md](validacion.md) y [creatividad.md](creatividad.md).
+
+- Recursos/catálogo probados: `dcf7738` — «feat: incorporar fotografía sintética y catálogo por plataforma».
+- Interfaz probada: `5106181` — «feat: preparar propuestas visuales adaptadas a cada plataforma».
+- Fetch sin divergencias; push normal correcto (`589d0df..5106181`), HEAD remoto confirmado `5106181a744d9b60cac02cdefa443bc7424a507c`. Se conserva `origin/main`; cierre documental separado, sin force ni cambios ajenos.
+- Siguiente hito sigue siendo D4.2 A/B; después D4.3 orquestador/optimización, Día 5 integración/decisiones/incidencias y Día 6 congelación/QA/presentación. El reparto MMM continúa bloqueado por sensibilidad. Esta revisión mejora D4.1; no declara cerrados el Día 4 ni la POC.
+- Imagegen y guías web aplicadas por el propio Codex, secuencialmente, sin agentes ni modelos locales. Recursos de runtime enteramente locales.

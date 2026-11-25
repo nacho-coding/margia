@@ -53,11 +53,30 @@ Holdout: 75.561 impresiones, 989 clics, CTR observado 1,3089 %. Train: 574.117 i
 
 Frecuencia observada en train: 1,21–4,50. Se advierte cuando el contexto sale de ese rango o usa una combinación aditiva no observada; las audiencias ajenas al canal se rechazan. La POC conserva resultados adversos y advertencias. No se deriva un ranking económico de estas asociaciones.
 
-## Tres composiciones y brief
+## Catálogo fotográfico y adaptación por plataforma
 
-Nueve SVG originales locales: hogar, moda y belleza × espacio, marco y detalle. `scripts/generar_variantes.mjs` reutiliza los productos de las composiciones originales con tres jerarquías visuales. Son activos precreados, no imágenes generadas al pulsar el formulario. Textos, CTA y tono se mantienen comparables dentro del perfil. Procedencia/licencia en [licencias.md](licencias.md).
+Revisión solicitada por el usuario tras D4.1: nueve fotografías sintéticas originales, generadas con **Imagegen integrada durante el desarrollo**, para hogar, moda y belleza × producto en contexto, material de cerca y escena cotidiana. Se incluyen localmente en `frontend/public/assets/creatividad/fotografia-v2`, con versión `fotografia-2.0.0`. No son fotografías de personas ni productos reales. Los prompts exactos se conservan en [creatividad_prompts.json](creatividad_prompts.json); procedencia/licencia en [licencias.md](licencias.md).
 
-El formulario recoge canal, perfil, audiencia, frecuencia, impresiones y objetivo. Python calcula CTR contextual, bandas y esperanza de clics (`impresiones × CTR`), y compone el brief mediante reglas. Las tres propuestas comparten **la misma referencia**: no hay efecto diferencial visual identificado ni ganador predictivo. La banda de esperanza no es un intervalo de conteos futuros.
+`scripts/preparar_imagenes.mjs` transcodifica los originales a WebP sin cambiar su contenido, utilizando Sharp ya fijado en el lockfile de Next. Nueve archivos, 1.047.498 bytes en total, máximo 169.146 bytes; 1086×1448 cada uno. El manifiesto `backend/app/creatividad/imagenes.json` guarda dimensiones, bytes y SHA-256. Se rechaza sobrescribir un recurso versionado con bytes diferentes. Las rutas absolutas de los PNG originales permanecen solo en el artefacto local ignorado `artifacts/qa/imagenes-generadas.json`, no en Git.
+
+La API construye 36 propuestas posibles (tres perfiles × tres escenas × cuatro placements) con una única fuente de textos, recursos, CTA, origen y formato. La vista aplica una composición HTML/CSS versionada, `composicion-2.0.0`; no necesita canvas, vídeo ni fuentes remotas. Los lienzos elegidos para esta demo son:
+
+| Plataforma | Formato de la vista | Tratamiento |
+|---|---|---|
+| Meta | Feed 4:5 | Fotografía editorial, marca y mensaje sobre pie claro |
+| TikTok | In-feed 9:16 | Gancho breve sobre la escena, encuadre vertical y espacio para interfaz |
+| Display | Banner adaptable 1200:628, aproximadamente 1,91:1 | Producto a la derecha, mensaje y CTA separados |
+| YouTube | Apertura in-stream 16:9 | Marca y titular en panel lateral, escena panorámica |
+
+Referencias primarias consultadas: [Meta, imagen de feed](https://en-gb.facebook.com/business/ads-guide/update/image/facebook-feed/outcome-awareness), [TikTok, in-feed y zonas seguras](https://ads.tiktok.com/resources/help/article/tiktok-auction-in-feed-ads?lang=en-GB), [Google, display adaptable](https://support.google.com/google-ads/answer/7005917?hl=es) y [YouTube, formatos de vídeo](https://support.google.com/google-ads/answer/13547298?hl=es). Son maquetas de composición; las dimensiones del lienzo son referencias de presentación, no una exportación publicitaria validada. TikTok y YouTube muestran fotogramas estáticos, sin afirmar que exista vídeo reproducible.
+
+La biblioteca conserva `asset` y los hechos históricos; añade `vista_previa` como **recreación visual** adaptada al canal del registro. Se identifica tanto en las tarjetas como en el detalle, que permite consultar el SVG histórico. No se atribuye a las fotografías nuevas el CTR/CVR del registro ni se cambia el grano de entrenamiento.
+
+## Preparación de ejemplo y brief
+
+El formulario recoge canal, perfil, audiencia, frecuencia, impresiones y objetivo. «Generar propuestas de ejemplo» prepara tres escenas del catálogo elegido: carga/decodifica las imágenes reales en el navegador y solicita la evaluación al backend, con estados anunciados y error recuperable. Se identifica discretamente como simulación con recursos precreados; no se fingen llamadas IA, porcentajes ni tiempos de generación. Los controles se bloquean solo mientras esa preparación está en curso. Cambiar plataforma o perfil retira las propuestas anteriores hasta preparar el contexto nuevo.
+
+Python calcula CTR contextual, bandas y esperanza de clics (`impresiones × CTR`), y compone el brief por reglas con el placement. Las tres propuestas comparten **la misma referencia**: no hay efecto diferencial visual identificado ni ganador predictivo. El formato adaptado tampoco tiene observaciones propias, y el CTR contextual no estima su efecto. La banda de esperanza no es un intervalo de conteos futuros.
 
 Guardar una propuesta crea una selección inmutable, consultable al recargar y en el historial. Es una hipótesis para una prueba futura; no activa medios ni modifica ventas. `multiplicador_demanda=1`, `efecto_identificado=false`. No se incorpora todavía a un escenario ni se simula una actualización A/B inexistente.
 
@@ -66,7 +85,8 @@ Guardar una propuesta crea una selección inmutable, consultable al recargar y e
 - `modelo` conserva parámetros, 200 réplicas, esquema, soporte, particiones, métricas, checksum, versión y semilla. El arranque lo prepara bajo advisory lock compartido con reset; GET no entrena.
 - Migración aditiva 0004: `pretest_creativo` y `seleccion_creativa`, con FK e índice único de selección por evaluación/variante.
 - La evaluación guarda inputs y resultado por contenido. Repetir contenido devuelve el mismo ID y declara reutilización. La selección valida pertenencia a la evaluación.
-- Recursos con `version_recurso=variantes-1.0.0`. Tras publicar, las rutas de esos SVG se conservan: un rediseño deberá crear ruta y versión nuevas para que una evaluación antigua mantenga su composición.
+- Se conservan los nueve SVG `variantes-1.0.0` y sus rutas para las evaluaciones antiguas. El renderer mantiene esa presentación cuando faltan metadatos de placement; no se migra ni se modifica el JSON guardado.
+- Las evaluaciones nuevas guardan `fotografia-2.0.0`, `composicion-2.0.0`, texto y placement, con IDs distintos por canal. Tras publicar, un rediseño deberá crear ruta, versión y renderer nuevos conservando los anteriores. Los resultados y selecciones antiguos siguen consultables.
 - El reset explícito reconstruye los hechos/modelos reproducibles y elimina evaluaciones y selecciones de usuario. Un reinicio conserva modelos y resultados sin reentrenar.
 
 | Método | Ruta `/api/v1` | Acción |

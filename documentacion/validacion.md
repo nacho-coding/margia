@@ -344,3 +344,46 @@ npm.cmd run test:e2e
 Un rebuild intermedio falló al sincronizar caché Turbopack (`I/O error`, `spawn EIO`), seguido de caída del motor Docker. C: tenía solo 1,47 GiB libres; no se establece una causalidad definitiva con ese espacio. Los intentos operativos mientras el motor estaba caído fallaron antes de ejecutar y no cuentan como pruebas. Se recuperó mediante `docker desktop restart --timeout 45`, con recuperación automática de PostgreSQL. Se inspeccionó `docker system df` y se eliminaron por ID únicamente 37 registros recuperables de compilación de MARGIA del día, 1,63 GB de caché regenerable; sin eliminar volúmenes, imágenes de usuario ni datos. Build y operación repetidos satisfactoriamente después. C: continúa con alrededor de 1,3 GiB libres: riesgo de entorno para compilaciones futuras, no resuelto por compactación ni borrados globales.
 
 Se conservan el warning conocido httpx/TestClient y el de entorno `NO_COLOR`/`FORCE_COLOR`. Predictor observacional limitado, CVR observado, composiciones empatadas por falta de identificación y multiplicador 1. A/B y efecto en escenarios pendientes. Sin agentes, LLM ni GPU.
+
+## 25/11/2026 · Revisión fotográfica y formatos por plataforma
+
+### Recursos y catálogo
+
+- Imagegen integrada ejecutada durante el desarrollo: nueve escenas sintéticas fotográficas de hogar, moda y belleza. Revisadas las salidas generadas y las vistas reales de la aplicación. Sin fotos externas, modelos locales ni llamadas IA de runtime. Los prompts exactos se conservan en [creatividad_prompts.json](creatividad_prompts.json).
+- `node scripts/preparar_imagenes.mjs`, dos pasadas: nueve WebP, **1.047.498 bytes** en total, máximo **169.146 bytes**, 1086×1448. Verificación independiente de los nueve SHA-256 y tamaños contra el manifiesto correcta. El script impide sustituir un recurso versionado con bytes diferentes. PNG originales y sus rutas locales fuera de Git.
+- 36 combinaciones de perfil/escena/placement en API; Meta 4:5, TikTok 9:16, Display 1200:628 y YouTube 16:9. Biblioteca con recreaciones marcadas, formato histórico conservado y enlace al SVG original. Modelo `creatividad-1.0.0`, parámetros y checksum del negocio intactos; formatos/fotografías nuevos sin efecto identificado.
+
+### Comandos y resultados
+
+```powershell
+docker compose run --rm --no-deps --volume "${PWD}/backend:/app" backend python -m pytest -q -p no:cacheprovider
+docker compose run --rm --no-deps --volume "${PWD}/backend:/app" backend ruff check --no-cache .
+$env:MARGIA_PORT='3002'
+docker compose -p margia-creatividad-qa up -d --build --wait --wait-timeout 180
+# Desde frontend:
+npm.cmd run lint
+npm.cmd run typecheck
+$env:MARGIA_QA_URL='http://127.0.0.1:3002'
+npm.cmd run test:e2e -- tests/creatividad.spec.ts
+npm.cmd run test:e2e -- --trace off
+# Desde la raíz:
+$env:MARGIA_PORT='3000'
+docker compose up -d --build --wait --wait-timeout 180
+./scripts/comprobar.ps1
+```
+
+- Backend con código montado: **78 passed, 1 warning en 22,63 s**. Verificador oficial contra la imagen final de producción: **78 passed, 1 warning en 22,69 s**, salud y Ruff correctos. Nuevas pruebas de cada placement, recurso/metadatos, CTR compartido/multiplicador 1, asset histórico sin cambios y consulta/selección de una fixture de evaluación SVG anterior sin migrarla.
+- Lint y TypeScript correctos. Builds finales de QA y principal correctos. No se añaden dependencias ni migraciones.
+- Recorridos específicos iniciales: **6 passed (40,4 s)**. Tras corregir encuadre de Meta y semántica del componente, regresión completa final: **22 passed (2,1 min)**, con `--trace off`. Todos los recorridos matemáticos/funcionales y las auditorías/capturas permanecen activos; solo se desactiva la grabación de trazas por espacio.
+- QA nueva: preparación con imágenes retenidas por la prueba de red, estado real visible, controles bloqueados durante trabajo, fallo de imagen/reintento con foco, inputs conservados, cambio de canal que retira resultados anteriores y ejecución en modo reduced-motion. Cuatro placements en escritorio/móvil, dimensiones reales del lienzo contrastadas con ratio y ancho natural de la foto; tres perfiles, selección y recarga.
+- Capturas generales de siete rutas en cuatro tamaños; pretest en 1440×900, 1920×1080, 1280×720 y 390×844, más las cuatro plataformas en 1440/390 y comparadores de moda/belleza. Axe sin infracciones detectadas en las combinaciones probadas; sin desbordamiento horizontal global. Inspección manual de biblioteca, Meta, TikTok, banner, YouTube móvil y fotografías. No es una auditoría humana de lector de pantalla.
+
+### Incidencias de QA y límites
+
+Una regresión completa previa dio **21 passed, 1 failed**: `ENOSPC` al guardar capturas/trazas, con C: casi lleno; no se cuenta como satisfactoria. Se eliminó únicamente `frontend/.next` tras comprobar la ruta absoluta dentro del workspace (36,96 MiB de caché regenerable) y se repitió la batería sin trazas. Las capturas y las comprobaciones de accesibilidad se mantuvieron. C: continúa con unos 130 MiB libres: riesgo de entorno aún abierto; no se borraron volúmenes, datos ni recursos generados. No hubo caída del motor Docker en este corte.
+
+La primera captura de un comparador móvil mostraba un artefacto de composición del enlace fijo de salto; se pasa a capturar la página completa desde arriba y se revisa la salida. El encuadre Meta se fija con área fotográfica/pie de texto estables para no tapar la base del producto. Se mantienen SVG y resultados antiguos, sin atribuirles las fotos nuevas.
+
+Modern Web Guidance: he aplicado `optimize-image-priority`, una única imagen prioritaria y lazy normal para miniaturas fuera de pantalla (“Only use `fetchpriority=\"high\"` on at most 1-2 critical images”); `responsive-design`, proporción reservada y tipografía relativa al contenedor (“Use `aspect-ratio` for media elements”). Los fotogramas son estáticos, la preparación es una simulación identificada y el CTR sigue siendo contextual. A/B, escenarios y demás fases mantienen su backlog.
+
+Persistencia repetida con la imagen final en la pila aislada: `tests/operacion.py preparar`, `restart db backend`, `up -d --wait --wait-timeout 120 db backend` y `tests/operacion.py verificar`, todos con resultado correcto. Conserva modelo/fecha, pretest completo (incluidos texto, recurso y plataforma), selección, hechos, MMM y Search/geo sin reentrenar. No se repite reset en esta revisión visual; su comprobación del hito D4.1 permanece registrada arriba. Al terminar, `docker compose -p margia-creatividad-qa down`, sin `-v`; principal saludable y solo localhost:3000 publicado. GET de contexto/pretest confirma checksum original, mismo modelo y 36 propuestas disponibles.
