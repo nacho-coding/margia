@@ -15,6 +15,26 @@ export type Creativo = {id:string; nombre:string; asset:string; atributos:Record
 export type Tabla<T> = {periodo:Periodo; filas:T[]; total:number; pagina:number; paginas:number; evidencia:string; cobertura:string; advertencias:string[]};
 export type Fiabilidad = {snapshot:string; estado:"valido"|"limitado"|"bloqueado"; fuentes:{id:string; nombre:string; filas:number; dias:number; cobertura:string; estado:string}[]; reglas:{id:string; nombre:string; valor:number|null; unidad:string; umbral:string; estado:string}[]; incidencias:{causa:string; accion:string}[]; diagnostico_modelos:string; checksum:string};
 
+type ErrorModelo = {mae:number; wape:number|null; sesgo:number|null};
+export type FichaModelo = {
+  id:string; version:string; snapshot:string; corte:string; semilla:number; checksum_datos:string;
+  estado:"limitado"|"bloqueado"; motivos:string[]; optimizable:boolean; ambito:string; objetivo:string;
+  semanas:number; train_inicio:string; train_fin:string; holdout_inicio:string; holdout_fin:string;
+  segundos_ajuste:number; incertidumbre:string; advertencias:string[];
+  configuracion:{replicas:number; bloque:number; holdout:number};
+  diagnostico:{train:ErrorModelo; holdout:ErrorModelo; naive:ErrorModelo; autocorrelacion_lag1:number|null;
+    correlacion_maxima:number; condicion:number|null; variacion_minima:number; sensibilidad:number;
+    cobertura_banda_holdout:number; umbrales:{max_correlacion:number; max_condicion:number; min_variacion:number; max_sensibilidad:number}};
+  folds:{train_fin:string; validacion_inicio:string; validacion_fin:string}[];
+};
+export type SemanaModelo = {inicio:string; fin:string; observado:number; predicho:number; baseline:number; efectos:number; residual:number; p05:number; p95:number; ancho_banda:number; naive:number|null; particion:"train"|"holdout"};
+export type CurvaModelo = {id:string; nombre:string; color:string; minimo:number; maximo:number; referencia:number; stock_previo_normalizado:number; horizonte_dias:number; puntos:{inversion:number; pedidos:number; p05:number; p95:number; ancho_banda:number; marginal:number; extrapolado:boolean}[]};
+export type MedicionModelo = {
+  modelo:FichaModelo; periodo:Periodo; aplicable:boolean; motivo:string|null; cobertura:string;
+  serie:SemanaModelo[]; curvas:CurvaModelo[];
+  resumen:{id:string; nombre:string; color:string; pedidos_modelados:number; pedidos_p05:number; pedidos_p95:number; margen_asignado:number; inversion:number; saldo_modelado:number; saldo_p05:number; saldo_p95:number}[];
+};
+
 export async function api<T>(path:string, signal?:AbortSignal):Promise<T> {
   const response = await fetch(`/api/v1/${path}`, {cache:"no-store", signal});
   if (!response.ok) {

@@ -86,7 +86,8 @@ test("capturas de pantallas reales y accesibilidad automatizada",async({page},te
     for(const route of routes){
       await page.goto(route);
       await expect(page.locator(".loading")).toHaveCount(0);
-      if(route==="/")await expect(page.locator("canvas")).toHaveCount(2);
+      if(route==="/"||route==="/medicion")await expect(page.locator("canvas")).toHaveCount(2);
+      await expect(page.locator(".chart.skeleton")).toHaveCount(0);
       await page.evaluate(()=>document.fonts.ready);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth);
       expect(overflow,`Desbordamiento en ${route} a ${size.width}`).toBeFalsy();

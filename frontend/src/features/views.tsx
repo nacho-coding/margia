@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Check, CircleHelp, Clock3, Database, FlaskConical, Layers3, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
-import { Contexto, KPIs, Tabla, Canal, Grupo, Creativo, Fiabilidad, Metrica, euros, numero, porcentaje, fecha } from "@/services/api";
+import { Contexto, KPIs, Tabla, Grupo, Creativo, Fiabilidad, Metrica, euros, numero, porcentaje, fecha } from "@/services/api";
 import { useRemote } from "@/services/use-remote";
 import { ErrorState } from "@/components/error-state";
 import { Badge, Drawer, Loading, ModuleLink, Notice, Pagination } from "@/components/ui";
@@ -52,17 +52,6 @@ export function Centro({query,ctx}:{query:string;ctx:Contexto}) {
     </>;
   }}</Resource>;
 }
-
-export function Medicion({query}:{query:string}) {
-  const resource=useRemote<Tabla<Canal>>(`medios?${query}`);
-  return <Resource resource={resource}>{data=><>
-    <Notice>{data.advertencias.join(" ")}</Notice>
-    <section className="panel"><div className="panel-header"><div><h2>Lectura de las plataformas</h2><p>{data.cobertura}</p></div><Badge>{data.evidencia}</Badge></div><div className="table-wrapper" role="region" aria-label="Tabla de medios" tabIndex={0}><table><caption className="visually-hidden">Inversión y atribución por canal. Las conversiones entre canales no se suman.</caption><thead><tr><th scope="col">Canal</th><th scope="col">Inversión</th><th scope="col">Impresiones</th><th scope="col">Clics</th><th scope="col">Conv. atribuidas</th><th scope="col">ROAS atribuido</th><th scope="col">Incrementalidad</th></tr></thead><tbody>{data.filas.map(c=><tr key={c.id}><th scope="row"><span className="channel-name"><i style={{background:c.color}}/>{c.nombre}</span><small>{c.tipo==="captura"?"Captura de demanda":"Generación de demanda"}</small></th><td>{euros(c.inversion)}</td><td>{numero(c.impresiones)}</td><td>{numero(c.clics)}</td><td>{numero(c.conversiones)}</td><td>{numero(c.roas_atribuido,2)}×</td><td><Badge>Pendiente de modelo</Badge></td></tr>)}</tbody></table></div><div className="panel-bottom-note">Ordenado por inversión descendente · Ventanas de atribución: 7 días; TV, 28 días · No equivale a beneficio.</div></section>
-    <div className="methodology-card"><ActivityMark/><div><h2>De la atribución a la contribución</h2><p>El siguiente incremento ajustará un MMM semanal de pedidos con holdout cronológico, comparación con baseline y diagnóstico. Hasta entonces, las métricas de plataforma se presentan como descriptivas.</p><ModuleLink secondary href={`/one-search?${query}`}>Explorar One Search</ModuleLink></div></div>
-  </>}</Resource>;
-}
-
-function ActivityMark(){return <div className="method-icon"><SlidersHorizontal size={27}/></div>;}
 
 export function OneSearch({query}:{query:string}) {
   const [intention,setIntention]=useState("");

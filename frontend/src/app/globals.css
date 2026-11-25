@@ -27,3 +27,40 @@
 @media(max-width:760px){.kpi-card:not(.featured) .kpi-value{font-size:clamp(1.15rem,12.8cqi,1.65rem)}}
 @media(prefers-reduced-motion:no-preference){a,button{transition:background-color 150ms,color 150ms,border-color 150ms}.navigation-scroller{scroll-behavior:smooth}}
 @media(forced-colors:active){.badge,.button,.panel,.kpi-card,.nav-item.active{border:1px solid CanvasText}.nav-item.active{outline:1px solid Highlight}.featured{background:Canvas;color:CanvasText}.featured :is(.kpi-label,.kpi-value,.kpi-comparison){color:CanvasText}}
+
+.model-workspace{margin-block-end:22px}
+.model-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-block:24px 18px}
+.model-heading h2{font-size:1.3rem;font-weight:500;letter-spacing:-.035rem;margin-block:8px}
+.model-heading>div>p:last-child{font-size:.7rem}
+.model-heading .eyebrow{font-size:.56rem;text-transform:uppercase;letter-spacing:.06rem}
+.model-status{display:flex;align-items:flex-start;gap:12px;padding:16px 19px;background:#F7F1E7;border:1px solid #DDCFB5;border-radius:5px;margin-block-end:17px}
+.model-status>svg{color:#94600D;flex:0 0 auto;margin-block-start:2px}
+.model-status strong{font-size:.75rem;font-weight:600}
+.model-status p{font-size:.7rem;line-height:1.7;margin-block-start:4px;max-inline-size:105ch}
+.model-status>.badge{margin-inline-start:auto;flex:0 0 auto}
+.model-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:#FFF;border:1px solid var(--border);border-radius:6px}
+.model-metrics article{padding:18px 20px;min-inline-size:0}
+.model-metrics article+article{border-inline-start:1px solid var(--border)}
+.model-metrics small{font-size:.65rem;color:var(--muted);display:block}
+.model-metrics strong{display:block;font-size:1.7rem;font-weight:500;letter-spacing:-.04rem;margin-block:8px 5px;font-variant-numeric:tabular-nums}
+.model-metrics p{font-size:.61rem;line-height:1.7}
+.model-period{display:block;line-height:1.7;margin-block:11px 20px;font-size:.64rem}
+.model-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:17px;align-items:start;margin-block-end:20px}
+.model-grid .chart{block-size:285px}
+.model-grid .panel-header{min-block-size:90px;align-items:flex-start}
+.model-grid .panel-bottom-note{line-height:1.8;min-block-size:76px;font-size:.64rem}
+.curve-selector{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.curve-selector label{font-size:.65rem;color:var(--muted)}
+.curve-selector select{min-block-size:30px;font-size:.7rem;padding:4px 8px}
+.model-data{padding:13px 18px;border-block-start:1px solid var(--border)}
+.model-data summary{font-size:.68rem;color:var(--primary);padding-block:3px;min-block-size:28px}
+.model-data .table-wrapper{margin-block-start:12px;max-block-size:360px}
+.model-assignment{margin-block-end:20px}
+.model-assignment .panel-bottom-note{line-height:1.8;font-size:.65rem}
+.model-notes{padding-inline-start:19px;font-size:.78rem;color:var(--muted);line-height:1.85}
+.model-notes li+li{margin-block-start:10px}
+.model-next{margin-block-start:20px}
+@media(max-width:1300px){.model-metrics article{padding:16px 13px}.model-metrics small{font-size:.6rem}.model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.model-grid .panel-header{min-block-size:115px}}
+@media(max-width:1050px){.model-grid{grid-template-columns:minmax(0,1fr)}.model-grid .panel-header{min-block-size:80px}.model-grid .panel-bottom-note{min-block-size:0}}
+@media(max-width:760px){.model-heading h2{font-size:1.25rem}.model-status{flex-wrap:wrap;padding:16px;gap:9px}.model-status>div{flex:1 1 230px}.model-status>.badge{margin-inline-start:29px}.model-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.model-metrics article{padding:16px 13px}.model-metrics article:nth-child(3){border-inline-start:0}.model-metrics article:nth-child(n+3){border-block-start:1px solid var(--border)}.model-metrics strong{font-size:1.6rem}.model-metrics small{font-size:.65rem;line-height:1.6}.model-period{font-size:.67rem}.model-grid .panel-header{min-block-size:110px}.model-grid .chart{block-size:270px}.model-assignment .panel-header{flex-wrap:wrap}.model-data{padding-inline:15px}.curve-selector select{min-block-size:36px}.model-grid .panel-bottom-note{font-size:.66rem}}
+@media(pointer:coarse){.curve-selector select{min-block-size:48px}}

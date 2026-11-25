@@ -9,7 +9,8 @@ import { useRemote } from "@/services/use-remote";
 import { ErrorState } from "@/components/error-state";
 import { NavigationDrawer } from "@/components/navigation-drawer";
 import { Badge, Drawer, Loading } from "@/components/ui";
-import { Centro, Medicion, OneSearch, Creatividad, FiabilidadView, Pending, Ajustes } from "@/features/views";
+import { Centro, OneSearch, Creatividad, FiabilidadView, Pending, Ajustes } from "@/features/views";
+import { Medicion } from "@/features/medicion";
 
 const groups = [
   {label:"DECIDIR",items:[{path:"/",label:"Centro de decisiones",icon:LayoutDashboard},{path:"/escenarios",label:"Escenarios",icon:ChartNoAxesCombined}]},
@@ -19,7 +20,7 @@ const groups = [
 ];
 const descriptions:Record<string,{title:string;subtitle:string;eyebrow:string}> = {
   "/":{title:"Centro de decisiones",subtitle:"Una visión compartida del negocio. La evidencia, antes de actuar.",eyebrow:"PERSPECTIVA ECONÓMICA"},
-  "/medicion":{title:"Medición de medios",subtitle:"Inversión y atribución de plataforma, con sus límites a la vista.",eyebrow:"COMPRENDER EL RENDIMIENTO"},
+  "/medicion":{title:"Medición de medios",subtitle:"Pedidos propios, respuesta estimada y atribución. Cada lectura con sus límites.",eyebrow:"COMPRENDER EL RENDIMIENTO"},
   "/one-search":{title:"Una búsqueda. Una visión.",subtitle:"SEO y SEM en el mismo contexto comercial, sin duplicar inversión.",eyebrow:"ONE SEARCH"},
   "/creatividad":{title:"La creatividad, con contexto",subtitle:"Activos originales y rendimiento observado. Cada métrica con su denominador.",eyebrow:"INTELIGENCIA CREATIVA"},
   "/experimentos":{title:"Laboratorio de experimentos",subtitle:"La siguiente decisión empieza por una hipótesis contrastable.",eyebrow:"APRENDER ANTES DE ESCALAR"},
