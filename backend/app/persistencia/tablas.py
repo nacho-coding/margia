@@ -174,3 +174,14 @@ class Decision(Base):
     motivo: Mapped[str] = mapped_column(String(1000))
     evidencia: Mapped[dict] = mapped_column(JSON)
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Modelo(Base):
+    __tablename__ = "modelo"
+    __table_args__ = (UniqueConstraint("snapshot_id", "version", "checksum_datos"),)
+    id: Mapped[str] = mapped_column(String(60), primary_key=True)
+    snapshot_id: Mapped[str] = mapped_column(ForeignKey("snapshot.id"), index=True)
+    version: Mapped[str] = mapped_column(String(30))
+    checksum_datos: Mapped[str] = mapped_column(String(64))
+    resultado: Mapped[dict] = mapped_column(JSON)
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

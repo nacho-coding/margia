@@ -77,3 +77,105 @@ class Fiabilidad(BaseModel):
 
 class ConfirmacionReset(BaseModel):
     confirmacion: Literal["RESTABLECER DEMO"]
+
+
+class FichaModelo(BaseModel):
+    id: str
+    version: str
+    snapshot: str
+    corte: date
+    semilla: int
+    checksum_datos: str
+    checksum_snapshot: str
+    configuracion: dict[str, Any]
+    estado: Literal["limitado", "bloqueado"]
+    optimizable: bool
+    motivos: list[str]
+    ambito: str
+    objetivo: str
+    unidad: str
+    semanas: int
+    train_inicio: date
+    train_fin: date
+    holdout_inicio: date
+    holdout_fin: date
+    folds: list[dict[str, date]]
+    diagnostico: dict[str, Any]
+    incertidumbre: str
+    advertencias: list[str]
+    segundos_ajuste: float
+
+
+class SemanaModelo(BaseModel):
+    inicio: date
+    fin: date
+    observado: float
+    predicho: float
+    baseline: float
+    efectos: float
+    residual: float
+    componentes: dict[str, float]
+    p05: float
+    p95: float
+    ancho_banda: float
+    naive: float | None
+    particion: Literal["train", "holdout"]
+    margen_por_pedido: float | None
+    gasto: dict[str, float]
+
+
+class PuntoCurva(BaseModel):
+    inversion: float
+    pedidos: float
+    p05: float
+    p95: float
+    ancho_banda: float
+    marginal: float
+    extrapolado: bool
+
+
+class CurvaModelo(BaseModel):
+    id: str
+    nombre: str
+    color: str
+    tipo: str
+    minimo: float
+    maximo: float
+    referencia: float
+    stock_previo_normalizado: float
+    horizonte_dias: int
+    puntos: list[PuntoCurva]
+
+
+class SaldoModelo(BaseModel):
+    id: str
+    nombre: str
+    color: str
+    pedidos_modelados: float
+    pedidos_p05: float
+    pedidos_p95: float
+    saldo_p05: float
+    saldo_p95: float
+    margen_asignado: float
+    inversion: float
+    saldo_modelado: float
+
+
+class MedicionModelo(BaseModel):
+    modelo: FichaModelo
+    periodo: Periodo
+    aplicable: bool
+    motivo: str | None
+    cobertura: str
+    serie: list[SemanaModelo]
+    curvas: list[CurvaModelo]
+    resumen: list[SaldoModelo]
+
+
+class InventarioModelos(BaseModel):
+    filas: list[FichaModelo]
+
+
+class CurvasModelo(BaseModel):
+    modelo: str
+    curvas: list[CurvaModelo]

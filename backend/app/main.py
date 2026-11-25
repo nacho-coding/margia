@@ -19,9 +19,20 @@ from app.api.consultas import (
     kpis,
     snapshot_actual,
 )
-from app.api.contratos import ConfirmacionReset, Contexto, Fiabilidad, KPIs, Salud, TablaDatos
+from app.api.contratos import (
+    ConfirmacionReset,
+    Contexto,
+    CurvasModelo,
+    Fiabilidad,
+    InventarioModelos,
+    KPIs,
+    MedicionModelo,
+    Salud,
+    TablaDatos,
+)
 from app.datos.generador import generar
 from app.dominio.economia import cociente
+from app.modelos.servicio import asegurar_modelo, ficha, medicion, modelo_actual
 from app.persistencia.db import Base
 from app.persistencia.tablas import (
     BusquedaDiaria as B,
@@ -80,7 +91,30 @@ def obtener_medios(db: Db, filtro: FiltroAPI):
     return TablaDatos(periodo=filtro.periodo(), filas=filas, total=len(filas), pagina=1, paginas=1,
                       evidencia="Atribución sintética de plataforma", cobertura="Completa en el periodo seleccionado",
                       advertencias=["Las conversiones atribuidas se solapan entre plataformas: no son pedidos únicos.",
-                                    "MMM e incrementalidad pendientes del Día 2. No existe todavía una recomendación causal."])
+                                    "El MMM nacional se consulta por separado: las asociaciones modeladas no identifican causalidad."])
+
+
+@app.get("/api/v1/modelos", response_model=InventarioModelos)
+def obtener_modelos(db: Db):
+    return {"filas": [ficha(modelo_actual(db, snapshot_actual(db)))]}
+
+
+@app.get("/api/v1/modelos/mmm", response_model=MedicionModelo)
+def obtener_medicion_modelada(db: Db, filtro: FiltroAPI):
+    return medicion(db, filtro)
+
+
+@app.get("/api/v1/modelos/{modelo_id}/curvas", response_model=CurvasModelo)
+def obtener_curvas(db: Db, modelo_id: str, canal: str | None = Query(None, max_length=30)):
+    modelo = modelo_actual(db, snapshot_actual(db))
+    if modelo.id != modelo_id:
+        raise HTTPException(404, "El modelo no pertenece al snapshot activo.")
+    curvas = modelo.resultado["curvas"]
+    if canal:
+        curvas = [c for c in curvas if c["id"] == canal]
+        if not curvas:
+            raise HTTPException(422, "El canal no tiene curva de demanda. SEM marca se evalúa en One Search.")
+    return {"modelo": modelo.id, "curvas": curvas}
 
 
 @app.get("/api/v1/busqueda", response_model=TablaDatos)
@@ -177,6 +211,7 @@ def reset_demo(confirmacion: ConfirmacionReset, db: Db):
     for nombre, filas in mundo.tablas.items():
         for i in range(0, len(filas), 2000):
             db.execute(insert(Base.metadata.tables[nombre]), filas[i:i+2000])
+    asegurar_modelo(db, db.get(Snapshot, m["id"]))
     db.commit()
     return {"estado": "restablecido", "snapshot": m["id"], "checksum": m["checksum"],
             "segundos": round(time.perf_counter()-inicio, 3)}

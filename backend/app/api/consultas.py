@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session
 
 from app.api.contratos import Contexto, Fiabilidad, KPIs, Metrica, Periodo
 from app.dominio.economia import cociente, contribucion
+from app.modelos.mmm import VERSION as VERSION_MMM
 from app.persistencia.db import get_db
-from app.persistencia.tablas import Canal, MediosDiarios, Mercado, NegocioDiario, Snapshot
+from app.persistencia.tablas import Canal, MediosDiarios, Mercado, Modelo, NegocioDiario, Snapshot
 
 Db = Annotated[Session, Depends(get_db)]
 Dias = Literal[28, 56, 90, 365]
@@ -66,7 +67,7 @@ def contexto(db: Session) -> Contexto:
                     evidencia="Observado sintético", moneda="EUR",
                     mercados=[{"id": m.id, "nombre": m.nombre} for m in mercados],
                     manifiesto=snapshot.manifiesto,
-                    modulos={"centro": "Datos observados", "medicion": "Atribución descriptiva; MMM pendiente",
+                    modulos={"centro": "Datos observados", "medicion": "MMM nacional validado temporalmente y atribución descriptiva",
                              "one-search": "Datos observados; estimación pendiente", "creatividad": "Biblioteca observada; pretest pendiente",
                              "experimentos": "En desarrollo · Día 3", "escenarios": "En desarrollo · Día 4",
                              "fiabilidad": "Integridad de fuentes; incidencias alternativas pendientes"})
@@ -152,6 +153,12 @@ def fiabilidad(db: Session) -> Fiabilidad:
                    ("creatividad_diaria", "Rendimiento creativo", 28, "Mercados parciales por activo; no causal", "limitado"),
                ]]
     incidencias = [] if not bloqueado else [dict(causa="Cobertura crítica o margen incoherente", accion="Restablecer la demo o investigar el snapshot.")]
+    modelos = db.scalars(select(Modelo).where(Modelo.snapshot_id == snapshot.id, Modelo.version == VERSION_MMM)).all()
+    diagnostico = "Sin modelos ajustados todavía."
+    if modelos:
+        diagnostico = " ".join(f"{m.version}: {m.resultado['estado']}. " +
+                              (" ".join(m.resultado['motivos']) or "Ajuste observacional nacional; optimización deshabilitada hasta calibración.")
+                              for m in modelos)
     return Fiabilidad(snapshot=snapshot.id, estado="bloqueado" if bloqueado else "limitado", fuentes=fuentes,
                        reglas=reglas, incidencias=incidencias, checksum=snapshot.checksum,
-                       diagnostico_modelos="Sin modelos ajustados todavía. Integridad de datos verificada; la cobertura parcial limita las fuentes indicadas.")
+                       diagnostico_modelos=diagnostico + " La cobertura parcial limita las fuentes indicadas.")
