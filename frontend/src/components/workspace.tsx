@@ -46,6 +46,7 @@ export function Workspace() {
   const href=(route:string)=>`${route}?${query}`;
   const filter=(name:string,value:string)=>{
     const next=new URLSearchParams(query); if(value) next.set(name,value); else next.delete(name);
+    if(path==="/one-search"&&search.get("hipotesis"))next.set("hipotesis",search.get("hipotesis")!);
     router.replace(`${path}?${next.toString()}`,{scroll:false});
   };
   return <div className={`workspace ${collapsed?"collapsed":""} ${mobileOpen?"mobile-open":""}`}>

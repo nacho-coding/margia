@@ -15,6 +15,13 @@ export type Creativo = {id:string; nombre:string; asset:string; atributos:Record
 export type Tabla<T> = {periodo:Periodo; filas:T[]; total:number; pagina:number; paginas:number; evidencia:string; cobertura:string; advertencias:string[]};
 export type Fiabilidad = {snapshot:string; estado:"valido"|"limitado"|"bloqueado"; fuentes:{id:string; nombre:string; filas:number; dias:number; cobertura:string; estado:string}[]; reglas:{id:string; nombre:string; valor:number|null; unidad:string; umbral:string; estado:string}[]; incidencias:{causa:string; accion:string}[]; diagnostico_modelos:string; checksum:string};
 
+export type SearchInputs={recorte_pct:number; cuota_plataforma:number; coste_experimento:number; plataforma_comun:boolean; hipotesis?:string|null};
+export type SearchBand={p05:number;p50:number;p95:number;probabilidad_perdida:number;delta_pedidos_p05:number;delta_pedidos_p95:number;replicas:number;metodo:string};
+export type Radar={periodo:Periodo;criterio:string;filas:{id:string;titulo:string;modelo:string;prioridad:number;impacto:number;banda:SearchBand;coste:number;recorte_pct:number;estado:string;recomendacion:string;motivos:string[];url:string}[]};
+export type SearchEvidence={periodo:Periodo;serie:{fecha:string;seo:number;sem:number}[];defecto:SearchInputs;soporte_pct:number[];modelo:{id:string;version:string;hipotesis:string;semilla:number;checksum_datos:string;estado:string;motivos:string[];metodo:string;unidad:string;recuperacion:null;pares:number;experimentos:number;replicas:number;advertencias:string[];estratos:{id:string;pares:number;pooling:string}[];placebo:{efecto:number;ic95:number[]};intervalos:{recorte:number;tasa:number;p05:number;p95:number}[];historicos:{id:string;inicio_pre:string;inicio_post:string;fin:string;recorte:number;origen:string}[]}};
+type SearchBalance={pedidos:number;margen:number;inversion:number;plataforma:number;experimento:number;contribucion:number};
+export type SearchSimulation={id:string;reutilizada:boolean;resultado:{periodo:Periodo;modelo:string;version:string;hipotesis:string;semilla:number;entradas:SearchInputs;estado:string;motivos:string[];recomendacion:string;ahorro:number;delta_pedidos:number;cambio_margen:number;costes_incrementales:number;delta:number;perdida_maxima_pedidos:number|null;recuperacion:null;base:SearchBalance;alternativa:SearchBalance;banda:SearchBand;desglose:{nombre:string;importe:number;offset:number;altura:number;favorable:boolean}[];advertencias:string[]}};
+
 type ErrorModelo = {mae:number; wape:number|null; sesgo:number|null};
 export type FichaModelo = {
   id:string; version:string; snapshot:string; corte:string; semilla:number; checksum_datos:string;
@@ -42,6 +49,12 @@ export async function api<T>(path:string, signal?:AbortSignal):Promise<T> {
     throw new Error(typeof error.detail==="string" ? error.detail : "Parámetros no válidos.");
   }
   return response.json();
+}
+export async function post<T>(path:string, body:unknown):Promise<T> {
+  const response=await fetch(`/api/v1/${path}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const data=await response.json();
+  if(!response.ok)throw new Error(typeof data.detail==="string"?data.detail:"Revisa los parámetros de la evaluación.");
+  return data;
 }
 export const numero = (v:number|null|undefined, decimals=0) => v==null ? "n/d" : new Intl.NumberFormat("es-ES", {maximumFractionDigits:decimals, minimumFractionDigits:decimals}).format(v);
 export const euros = (v:number|null|undefined, compact=false) => v==null ? "n/d" : new Intl.NumberFormat("es-ES", {style:"currency",currency:"EUR",maximumFractionDigits:0, ...(compact?{notation:"compact" as const}: {})}).format(v);
