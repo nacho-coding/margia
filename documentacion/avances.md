@@ -303,3 +303,53 @@ Una regresión previa dio 21 passed/1 failed por `ENOSPC` al guardar capturas y 
 - Fetch sin divergencias; push normal correcto (`589d0df..5106181`), HEAD remoto confirmado `5106181a744d9b60cac02cdefa443bc7424a507c`. Se conserva `origin/main`; cierre documental separado, sin force ni cambios ajenos.
 - Siguiente hito sigue siendo D4.2 A/B; después D4.3 orquestador/optimización, Día 5 integración/decisiones/incidencias y Día 6 congelación/QA/presentación. El reparto MMM continúa bloqueado por sensibilidad. Esta revisión mejora D4.1; no declara cerrados el Día 4 ni la POC.
 - Imagegen y guías web aplicadas por el propio Codex, secuencialmente, sin agentes ni modelos locales. Recursos de runtime enteramente locales.
+
+## 25/11/2026 · Inicio de A/B creativo (D4.2)
+
+- Inspección: `main` limpio, HEAD `3a7f211`, origin correcto y fetch sin divergencias. Releídos los seis contratos, instrucciones permanentes, avances y backlog; sin agentes.
+- Tareas: protocolo congelado desde un pretest, dos o tres brazos, asignación aleatoria por oportunidad sintética y equilibrada por fecha, observaciones nuevas posteriores al corte, denominadores/costes comparables, IC de diferencias de CTR con multiplicidad, CVR secundario separado, aprendizaje versionado por contexto y sin pooling de ramas dependientes. Conservar hechos y evaluaciones anteriores; no inferir beneficio desde clics.
+- Pruebas previstas: checksum original, semilla/asignación reproducible, futuro inaccesible antes de ejecutar, nulo/adverso, ceros y denominadores, multiplicidad, costes una vez, validez/abstención, duplicados/obsolescencia, conservación de versiones, API, persistencia/reset aislado, pytest/Ruff, lint/TypeScript/build y Playwright/axe/capturas. Todavía no ejecutadas para D4.2.
+- Entorno: C: tenía 106,5 MiB libres. Lectura de VHD denegada por permisos de Hyper-V; no se compacta ni se modifica el disco. TRIM sobre el montaje Docker solo informa 6,9 MiB y no resuelve espacio. Se verifica la ruta absoluta de `_cacache` de npm y se elimina únicamente esa caché de descargas regenerable (2.525,3 MiB), conservando paquetes instalados, configuración, proyectos y volúmenes. C: pasa a 2,57 GiB libres.
+- Modern Web Guidance: guía `forms` consultada para el nuevo protocolo y transiciones. Se mantienen imágenes y formatos fotográficos locales; no hacen falta recursos generativos nuevos.
+
+## 25/11/2026 · D4.2 cerrado: A/B creativo y aprendizaje por contexto
+
+### Implementado y límites
+
+- Flujo selección/pretest → protocolo → ejecución → evaluación → aprendizaje guardado. Dos o tres brazos del mismo pretest, contexto y recursos congelados, hipótesis, calendario, exposición, costes, semilla y MDE aproximado. Historial consultable, estados reales y filtros que conservan la prueba en URL sin reejecutarla.
+- Mundo A/B separado `mundo-ab-1.0.0`: oportunidades independientes con asignación aleatoria completa y equilibrada por fecha. Observaciones nuevas solo al ejecutar, sin futuro en GET ni suma a ventas/medios propios. Asignaciones completas comprimidas, SHA-256, reconciliación con conteos y exportación CSV por oportunidad. El mecanismo base compartido conserva exactamente el universo original.
+- Estimador puro `creatividad-ab-1.0.0`: CTR primario con denominador impresiones, CVR secundario condicionado a clic, Wilson para tasas y Newcombe-Wilson para diferencias; Bonferroni en dos contrastes predefinidos frente al control. Costes comparables y producción una vez. Muestra insuficiente impide guardar; nulo/adverso compatible puede actualizar.
+- Aprendizaje de respuesta con prior Jeffreys y 200 draws por brazo, separado de los IC frecuentistas y de nuevos clics. Versiones por contexto exacto, sustitución sin acumular ramas dependientes, copias reutilizadas, diseños obsoletos rechazados y modelos anteriores conservados. Huellas verificadas también entre evaluación y aceptación.
+- El pretest muestra el CTR experimental en una sección distinta de su referencia histórica. Predictor `creatividad-1.0.0`, JSON de pretests/selecciones, fotografías, placements y SVG publicados conservados. **CTR/CVR no identifican pedidos ni beneficio: multiplicador económico 1, también después de aceptar.** No hay integración de escenarios aún.
+- Reutilizadas tablas `experimento`/`modelo`, sin nuevas migraciones, dependencias, servicios ni IA de runtime. Catálogos geo/A/B separados. Método, fórmulas, fuentes y API en [experimentos_ab.md](experimentos_ab.md).
+
+### Comandos y evidencia ejecutada
+
+| Comando / comprobación | Resultado |
+|---|---|
+| `docker compose -p margia-ab-qa exec -T backend python -m pytest -q -p no:cacheprovider tests/test_ab.py` | 11 passed, 1 warning en 2,30 s |
+| Ruff sobre backend QA | Correcto |
+| `npm.cmd run lint` / `typecheck` | Correctos; lint repetido tras el último cambio y TypeScript incluido en build final |
+| Builds de producción QA y principal | Correctos; principal actualizada conservando volumen |
+| Playwright A/B inicial | 3 passed (36,4 s); captura prematura de diseño corregida antes de la regresión completa |
+| Regresión completa `npm.cmd run test:e2e -- --trace off` en QA | 25 passed (3,0 min), screenshots y axe activos |
+| A/B tras ajustar espaciado | 3 passed (29,7 s) |
+| Recorridos finales afectados: `tests/ab.spec.ts tests/creatividad.spec.ts --trace off` | 9 passed (1,3 min), tras aclarar las tarjetas históricas y el aprendizaje separado |
+| Capturas/axe | Diseño y resultado A/B en cuatro tamaños, cuatro plataformas conservadas, regresión general sin infracciones detectadas ni desbordamiento global; revisión manual escritorio/móvil |
+| `tests/operacion.py preparar` → reinicio → `verificar`, con `PYTHONPATH=/app`, en QA nueva | Protocolo, observaciones, aprendizaje completo y fecha exacta conservados, junto con hechos/modelos/selecciones anteriores |
+| `tests/operacion.py reset`, solo en QA | 44,807 s; mismo checksum, A/B/modelos de usuario eliminados y evidencia inicial restaurada |
+| `./scripts/comprobar.ps1` sobre imagen principal final de backend | 89 passed, 1 warning en 27,98 s; Ruff y salud correctos |
+| `docker compose -p margia-ab-qa down` | QA detenida sin borrar volumen; principal con tres servicios saludables, solo localhost:3000 publicado |
+
+Las repeticiones específicas no se cuentan como pruebas únicas adicionales. La última aclaración de texto solo modifica el frontend; los nueve recorridos afectados y su build final pasan después. La API principal confirma el modelo histórico `creatividad-bfce2ee924571d327baa`, versión `creatividad-1.0.0`, y el checksum original `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. Cero pruebas A/B de QA en la principal; no se resetea la demo de usuario.
+
+Incidencias corregidas: primer build con props incorrectas de `ModuleLink`; primer comando operativo sin `PYTHONPATH=/app` falló al importar antes de preparar fixtures; primera captura de diseño esperaba una lista de imágenes todavía vacía. Se corrigen y se repiten las comprobaciones afectadas. Detalle en [validacion.md](validacion.md). Avisos heredados httpx y color Playwright; no se ocultan como fallos resueltos. Espacio final C: **2,58 GiB** libres; sin ENOSPC ni caída Docker en este corte, aunque el margen de entorno sigue limitado.
+
+### Git y fases restantes
+
+- Backend probado: `df28955` — «feat: ejecutar A/B creativo y versionar aprendizaje CTR por contexto».
+- Interfaz probada: `0febdcb` — «feat: conectar selección creativa con pruebas A/B y aprendizaje visible».
+- Fetch sin divergencias; push normal a `origin/main` correcto (`3a7f211..0febdcb`). `git ls-remote origin refs/heads/main` confirma `0febdcbbd13866220f64be701332028d8baf31d7`. Cierre documental en commit separado. Sin force, cambio de remoto, configuración global de identidad ni cambios ajenos.
+- **Días 1–3 y D4.1–D4.2 verificados.** Siguiente D4.3: orquestador común base/ahorro/reinversión, draws compartidos, restricciones, costes y optimización factible con opción mantener. El MMM sigue bloqueando recomendaciones de reparto por sensibilidad; no se relaja ese diagnóstico ni se aplica un multiplicador económico desde CTR.
+- Día 5: CRUD de escenarios, ejecuciones inmutables, decisiones con motivo y exportaciones; incidencias/restauración y recorrido integrado. Día 6: congelación, regresión A01–A14, rendimiento, revisión visual, secretos/licencias y presentación. P1/P2 aplazados. No se declara cerrado el Día 4 ni la POC.
+- Modern Web Guidance `forms` aplicada; trabajo secuencial del propio Codex, sin agentes, subagentes ni delegación.

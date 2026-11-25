@@ -46,7 +46,7 @@ El MMM solo usa siete canales de demanda; SEM marca sigue en los hechos observad
 
 ## Pendientes deliberados
 
-A/B creativo, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D4.2–D5. Escenarios permanece identificado como en desarrollo. El pretest creativo guarda hipótesis contextuales; la respuesta económica sigue en 1 hasta evidencia compatible.
+Orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D4.3–D5. Escenarios permanece identificado como en desarrollo. El pretest guarda hipótesis y muestra aprendizaje A/B contextual separado; la respuesta económica sigue en 1 mientras no exista efecto identificado sobre pedidos propios.
 
 ## One Search y radar
 
@@ -74,4 +74,14 @@ Migración 0004 añade `pretest_creativo` y `seleccion_creativa`. Evaluaciones p
 
 `app/creatividad/recursos.py` sirve el catálogo fotográfico versionado, con manifiesto de nueve WebP y 36 combinaciones de perfil/escena/placement. La biblioteca añade una recreación visual sin modificar el recurso ni los hechos históricos. El frontend compone formatos Meta/TikTok/Display/YouTube con metadatos del backend; el flujo de preparación espera la carga/decodificación real y el POST, identifica la simulación y conserva errores/reintentos. No hay IA de runtime ni vídeo generado.
 
-El pretest presenta tres escenas con referencia contextual compartida y guarda una hipótesis. Conserva sin cambios los resultados y SVG de la versión anterior. No identifica un ganador ni transforma CTR/CVR en pedidos. Multiplicador económico 1 hasta A/B compatible; sin integración de escenarios todavía. API, diagnóstico, denominadores y límites en [creatividad.md](creatividad.md).
+El pretest presenta tres escenas con referencia histórica contextual compartida y guarda una hipótesis. Conserva sin cambios los resultados y SVG de la versión anterior. El predictor histórico no identifica un ganador ni transforma CTR/CVR en pedidos. Multiplicador económico 1; sin integración de escenarios todavía. API, diagnóstico, denominadores y límites en [creatividad.md](creatividad.md).
+
+## A/B creativo y aprendizaje de CTR
+
+`app/creatividad/experimentos.py` coordina protocolo → observaciones → contraste → aprendizaje. Reutiliza `experimento`, tipo `ab_creativo`, y `modelo`, sin DDL nuevo. El mundo separado `app/datos/mundo_ab.py` comparte únicamente el mecanismo base de tasas con el generador original; `app/modelos/ab.py` es un estimador puro sin importarlo. Se conserva el checksum original.
+
+La aleatorización opera sobre oportunidades independientes, equilibradas por fecha. Protocolo, recursos, semilla, asignaciones completas comprimidas y observaciones diarias quedan persistidos. La API oculta datos de compresión/draws, permite exportar oportunidades en CSV y valida sus huellas antes de evaluar/aceptar. Las ramas no modifican hechos de negocio; GET no ejecuta.
+
+Wilson para tasas y Newcombe-Wilson para diferencias de CTR, con Bonferroni en los contrastes previstos contra control. MDE aproximado y costes calculados en Python. Los draws Beta de respuesta describen incertidumbre del parámetro; CVR es secundario condicionado al clic. Ninguna de esas cifras demuestra demanda propia.
+
+Una evaluación compatible puede crear `creatividad-ab-1.0.0` en el contexto exacto. La cadena conserva versiones, sustituye sin acumular ramas dependientes, reutiliza evidencia idéntica y rechaza diseños obsoletos. El pretest consulta este aprendizaje aparte del modelo histórico y su JSON inmutable. Las rutas geo/A/B filtran su tipo; reset/reinicio usan el mismo advisory lock. Contratos, fórmula, endpoints y límites en [experimentos_ab.md](experimentos_ab.md).

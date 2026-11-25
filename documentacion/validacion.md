@@ -387,3 +387,66 @@ La primera captura de un comparador móvil mostraba un artefacto de composición
 Modern Web Guidance: he aplicado `optimize-image-priority`, una única imagen prioritaria y lazy normal para miniaturas fuera de pantalla (“Only use `fetchpriority=\"high\"` on at most 1-2 critical images”); `responsive-design`, proporción reservada y tipografía relativa al contenedor (“Use `aspect-ratio` for media elements”). Los fotogramas son estáticos, la preparación es una simulación identificada y el CTR sigue siendo contextual. A/B, escenarios y demás fases mantienen su backlog.
 
 Persistencia repetida con la imagen final en la pila aislada: `tests/operacion.py preparar`, `restart db backend`, `up -d --wait --wait-timeout 120 db backend` y `tests/operacion.py verificar`, todos con resultado correcto. Conserva modelo/fecha, pretest completo (incluidos texto, recurso y plataforma), selección, hechos, MMM y Search/geo sin reentrenar. No se repite reset en esta revisión visual; su comprobación del hito D4.1 permanece registrada arriba. Al terminar, `docker compose -p margia-creatividad-qa down`, sin `-v`; principal saludable y solo localhost:3000 publicado. GET de contexto/pretest confirma checksum original, mismo modelo y 36 propuestas disponibles.
+
+## 25/11/2026 · A/B creativo (D4.2)
+
+### Matemáticas, mundo y API
+
+```powershell
+docker compose -p margia-ab-qa exec -T backend python -m pytest -q -p no:cacheprovider tests/test_ab.py
+docker compose -p margia-ab-qa exec -T backend ruff check --no-cache .
+$env:MARGIA_PORT='3000'
+docker compose up -d --build --wait --wait-timeout 180
+./scripts/comprobar.ps1
+```
+
+- Específicas contra imagen QA final de backend: **11 passed, 1 warning en 2,30 s**. Verificador oficial contra imagen principal: **89 passed, 1 warning en 27,98 s**, Ruff y salud correctos. Una batería previa con código montado dio 89 passed en 29,69 s; no sustituye la comprobación oficial posterior. No se añaden paquetes ni migraciones.
+- Wilson contrastado con SciPy para ceros, tasas unitarias y conteos intermedios. Diferencias nulas, positivas y adversas; intervalos válidos y más amplios al corregir multiplicidad. MDE disminuye al aumentar exposición y aumenta con dos contrastes; producción imputada una vez.
+- Asignación completa por oportunidad, exclusividad, equilibrio por fecha, reconciliación, reproducibilidad y hash alterado. Observaciones posteriores al corte solo tras ejecutar; el cliente no puede inyectar ganador/efectos. Estimador separado del mundo por la regresión AST existente.
+- API: transiciones/idempotencia, recurso ajeno/duplicado rechazado, 150.000 oportunidades exportadas con su cabecera, catálogos geo/A/B separados, muestra insuficiente, huellas alteradas tras ejecutar/evaluar, conservación del JSON histórico y de pedidos/checksum.
+- Aprendizaje: 200 draws por brazo, contexto exacto, efecto nulo/adverso aceptable, copias sin acumulación ni reducción de bandas, rechazo de diseños obsoletos, modelo anterior inmutable y consultas de versiones. Multiplicador económico 1 incluso con mejora de CTR.
+
+El checksum original continúa en `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. Extraer las expresiones CTR/CVR a un mecanismo compartido no altera el generador `mundo-1.0.0`; la rama nueva tiene versión `mundo-ab-1.0.0`. Predictor histórico `creatividad-1.0.0` y recursos fotográficos/SVG publicados conservados.
+
+### Navegador, interfaz y accesibilidad
+
+```powershell
+# Desde frontend, contra QA aislada:
+npm.cmd run lint
+npm.cmd run typecheck
+$env:MARGIA_QA_URL='http://127.0.0.1:3002'
+npm.cmd run test:e2e -- tests/ab.spec.ts --trace off
+npm.cmd run test:e2e -- --trace off
+```
+
+- Lint y TypeScript correctos. Builds Next.js de producción correctos en QA y principal. Regresión completa: **25 passed (3,0 min)**, con screenshots y axe activos, sin grabación de trazas. Tras el ajuste de espaciado, los tres recorridos A/B vuelven a pasar: **3 passed (29,7 s)**. No se suman estos recorridos repetidos como pruebas únicas adicionales.
+- Tras aclarar las tarjetas históricas y compilar la interfaz final, se repiten todos los recorridos afectados: `npm.cmd run test:e2e -- tests/ab.spec.ts tests/creatividad.spec.ts --trace off`, **9 passed (1,3 min)**, incluidas las capturas/axe del diseño/resultado A/B y las cuatro plataformas. Lint final vuelve a pasar. El build final incluye comprobación TypeScript; el backend no cambia tras sus 89 pruebas.
+- Flujo real: generar propuestas → guardar selección → diseñar tres brazos → MDE/costes de API → ejecutar → 42 filas diarias → evaluar dos contrastes → aceptar → recargar → consultar aprendizaje del pretest. El cambio de periodo conserva ID/estado sin reejecutar y no cambia el checksum. Sin errores JavaScript en el recorrido comprobado.
+- Validación nativa de muestra, fallo HTTP recuperable con foco e inputs conservados, abstención por conteos escasos y descarga real de CSV de 1.000 oportunidades. Ningún botón de aceptación cuando falta evidencia; las acciones corresponden al estado persistido.
+- Diseño y resultado capturados en **1440×900, 1920×1080, 1280×720 y 390×844**, además de toda la regresión visual anterior. Axe WCAG A/AA/2.1 AA sin infracciones detectadas en los tamaños probados y sin desbordamiento global. Revisión manual de formulario/resultado de escritorio y móvil; fotografía local, gráfico con tabla alternativa y tablas con scroll propio. No equivale a auditoría humana de lector de pantalla.
+- La primera captura del diseño era prematura: `every()` sobre imágenes aún inexistentes no esperaba el formulario. Se añaden esperas por encabezado y foto real antes de capturar. Se corrige también un valor CSS de espaciado de etiquetas y se aclara en las tarjetas que su referencia pertenece al predictor histórico, separada del aprendizaje A/B.
+- Modern Web Guidance `forms`: he aplicado radios/checkboxes nativos, fieldset/legend, límites nativos y de API, errores al enviar con foco, textarea redimensionable y submit bloqueado solo durante trabajo real, siguiendo “DON'T disable submit buttons to block validation”. La guía completa se consultó antes de modificar la interfaz.
+
+### Persistencia y reset aislados
+
+```powershell
+$env:MARGIA_PORT='3002'
+docker compose -p margia-ab-qa up -d --build --wait --wait-timeout 180
+docker compose -p margia-ab-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py preparar
+docker compose -p margia-ab-qa restart db backend
+docker compose -p margia-ab-qa up -d --wait --wait-timeout 120 db backend
+docker compose -p margia-ab-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py verificar
+docker compose -p margia-ab-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py reset
+```
+
+Pila nueva `margia-ab-qa`, distinta de los volúmenes QA anteriores. Preparación, reinicio y verificación correctos: hechos, MMM, Search/geo, pretest, selección, protocolo/observaciones A/B, modelo completo y fecha exacta conservados sin reentrenar ni reejecutar. El reset tarda **44,807 s**, reproduce el checksum, elimina las pruebas/modelos A/B de usuario y devuelve 404 para sus IDs; restaura la evidencia inicial. No se resetea la principal. No se ejecutan pytest y Playwright mutando simultáneamente la misma base.
+
+### Incidencias y límites del corte
+
+El primer build de QA detectó props incorrectas al reutilizar `ModuleLink` en el enlace del laboratorio; corregidas al contrato real de ese componente antes de las pruebas satisfactorias. El primer comando operativo omitió `PYTHONPATH=/app` y falló al importar `app`, antes de preparar fixtures; se repitió correctamente con el entorno documentado. Ninguno de esos intentos se cuenta como satisfactorio.
+
+C: comenzó con 106,5 MiB libres. `Get-VHD` no obtuvo permisos Hyper-V; no se modificó/compactó el disco. TRIM de Docker informó 6,9 MiB y no solucionó el espacio. Tras verificar la ruta absoluta se eliminó exclusivamente la caché regenerable de descargas npm `_cacache` (2.525,3 MiB), conservando `_npx`, paquetes instalados, configuración, proyectos y volúmenes. Se recuperaron **2,57 GiB** libres. No hubo ENOSPC ni caída de Docker en los builds/QA de este corte; sigue siendo un entorno con poco margen para acumular imágenes/cachés.
+
+Avisos heredados httpx/TestClient y `NO_COLOR`/`FORCE_COLOR`. Inferencia nominal aproximada, oportunidades independientes, prior/percentiles condicionados, CVR seleccionado por clic, efectos latentes ilustrativos y transporte estricto. No se identifica beneficio, no se acumulan ramas y no se relaja el bloqueo de sensibilidad del MMM. D4.3, D5 y D6 pendientes; no se declara la aceptación completa A01–A14. Método y fuentes primarias en [experimentos_ab.md](experimentos_ab.md). Trabajo secuencial sin agentes.
+
+Cierre operativo: `docker compose -p margia-ab-qa down`, sin `-v`, correcto; los tres servicios principales siguen saludables en localhost:3000. GET de contexto/pretest/pruebas confirma el mismo checksum y predictor histórico y cero pruebas A/B de QA en la principal. Espacio final C: **2,58 GiB** libres. La interfaz final se despliega con `docker compose up -d --build --no-deps --wait --wait-timeout 120 frontend`; el backend conserva la imagen de sus 89 pruebas.
