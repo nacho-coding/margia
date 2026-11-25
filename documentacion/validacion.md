@@ -1,20 +1,21 @@
-# Validación ejecutada · Fundaciones y Medición
+# Validación ejecutada · Fundaciones, Medición y One Search
 
-Fecha: 25/11/2026. Pila real de producción local en Docker Desktop sobre Windows. Incluye evidencia histórica del Día 1 y el incremento D2.1–D2.2 al final del documento. No acredita D2.3–D5 ni validez comercial sobre datos reales.
+Fecha: 25/11/2026. Pila real de producción local en Docker Desktop sobre Windows. Cubre Días 1 y 2 y D3.1; los apartados históricos se conservan. No acredita los nuevos experimentos, VOI, creatividad predictiva o escenarios de las fases siguientes, ni validez comercial sobre datos reales.
 
 ## Estado de aceptación
 
 | Criterio | Cobertura del incremento | Resultado |
 |---|---|---|
 | A01 | Compose, PostgreSQL vacío, migración congelada, seed, health, reinicio, reset | Verificado en pila aislada y producción local; ver comandos |
-| A02 | Reproducción, checksum canónico, FK, clics/exposición, presupuesto y reconciliación | 26 tests pytest pasan en la batería actual, incluidos los de MMM |
+| A02 | Reproducción, checksum canónico, FK, clics/exposición, presupuesto y reconciliación | 39 pytest, incluido universo preservado e históricos experimentales |
 | A03 | MMM ajustado, holdout, naive, diagnóstico, curvas con soporte y límites | Verificado como modelo observacional; reparto por canal inestable y recomendaciones bloqueadas |
-| A04–A09 | Search causal, geo, pretest/A-B, optimización, EVPI/EVSI e incidencia | Pendientes; solo aritmética contractual unitaria y vistas descriptivas |
+| A04 | Search cambia resultado, costes, equilibrio, soporte y abstención | Verificado con efecto experimental directo; recuperación no identificada |
+| A05–A09 | Nuevos geo, pretest/A-B, optimización, EVPI/EVSI e incidencia | Pendientes de sus fases |
 | A10 | Persistencia de fixture de decisión y checksum tras reinicio | Verificado; CRUD de escenarios y decisiones de usuario pendiente |
-| A11 | Contexto, medios/búsqueda/creatividad, filtros, detalles, exportación, reintento, reset protegido y lectura del MMM | Playwright: nueve recorridos pasan en el incremento de Medición |
+| A11 | Contexto, módulos descriptivos, MMM, radar → hipótesis → simulación → guardado, errores y abstención | 13 recorridos Playwright; cuatro de Search repetidos tras ajuste móvil |
 | A12 | Siete rutas × cuatro tamaños, sin scroll global, axe y revisión visual | 28 capturas reales; revisadas las siete vistas, con centro móvil/escritorio y biblioteca 1920 |
 | A13 | CPU, recursos locales, .env ignorado, sin agentes/LLM/API pagada | Inspección de código/configuración y staging; sin tokens/dumps/capturas/dependencias locales publicados |
-| A14 | PRD/RFC conservados y commits locales | Push bloqueado por permisos de GitHub al último intento |
+| A14 | PRD/RFC conservados y publicación normal | Acceso habilitado; fundaciones, MMM y radar/Search publicados hasta c9fd02d, verificado con ls-remote |
 
 ## Backend y matemáticas
 
@@ -170,3 +171,56 @@ Reinicio: conserva fixture de decisión, negocio, checksum, resultado completo d
 D2.3 permanece pendiente: falta evidencia Search para radar económico, seguida de geo/valor de información y escenarios. No se declara cerrado el Día 2 completo ni candidata final. Publicación: reintentado `git push origin main`, mismo 403 para `ignaciofontal`; se conservan commits locales, remoto y cambios previos.
 
 Modern Web Guidance se volvió a consultar antes de implementar UI: `search "responsive data table"`, `retrieve "responsive-table,accessibility"`, versión de skill `2026_11_16-268fb9ea`. Apliqué regiones de scroll con teclado (“Add a `tabindex="0"` attribute to the container”) y alternativas tabulares de ambos gráficos (“Provide semantic data tables as alternatives”). Se reutiliza el drawer nativo probado; no se añadieron librerías ni agentes.
+
+## 25/11/2026 · D2.3 y dependencia D3.1 verificados
+
+Modelo `search-1.0.0`, ID `search-90c0cd70be0bef7b8d7a`, hipótesis `hip-marca-90c0cd70be0bef7b8d7a`. Los 12 históricos, 288 asignaciones y 576 observaciones se almacenan y etiquetan como arranque sintético. Los estimadores no leen la verdad ni el generador (prueba AST conservada). El checksum de los hechos sigue exactamente en `6715…0c9d`, probado después de extraer el mecanismo compartido de captura.
+
+Resultado observado con contexto nacional de 28 días, recorte del 50 % y costes nuevos cero:
+
+| Magnitud | Resultado calculado |
+|---|---|
+| Ahorro | 34.898,03 € |
+| Cambio de pedidos propios | −420,77 pedidos esperados |
+| Cambio de margen | −18.401,94 € |
+| Delta de contribución | 16.496,09 € |
+| Banda p05–p95 | −7.104,57 € a 39.307,73 € |
+| Réplicas negativas | 9,5 % de 400 draws de parámetros |
+| Recuperación SEO/directo | No identificada; se utiliza efecto total por euro |
+
+El resultado no implica actuar: invita a contrastar, explicita pérdidas posibles y permite costes que cambian el signo. Cuota incremental 100.000 €: delta −83.503,91 € y mantener; cuota común se cancela en la comparación. Fuera del soporte, un mercado individual u otro horizonte se señalan como hipótesis sin recomendación. No se ha relanzado ni suavizado el MMM bloqueado para justificar el radar.
+
+### Comandos realmente ejecutados
+
+```powershell
+docker compose up -d --build --wait --wait-timeout 180
+docker compose run --rm --no-deps --volume "${PWD}/backend:/app" backend python -m pytest -q -p no:cacheprovider
+docker compose exec -T backend ruff check --no-cache .
+Set-Location frontend
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test:e2e
+npm.cmd run test:e2e -- tests/search.spec.ts
+```
+
+- Última batería Python completa: **39 passed, 1 warning en 29,10 s**; una ejecución previa pasó en 18,48 s. Ruff final correcto. Se mantiene la deprecación conocida httpx/TestClient. No hay dependencias nuevas.
+- Pruebas nuevas: hash del mundo inalterado, semilla y subsemillas, aleatorización por par, FK/granos, exclusión de contrafactuales del estimador, nulo/negativo, placebo adverso, pocos pares, bandas no degeneradas, recorte 0/100/fuera de rango, cuota común/incremental, casos negativos, reconciliación, persistencia/ID, API y rechazo de hipótesis inventada.
+- Build final de producción, TypeScript y lint correctos. Regresión completa: **13 passed (1,8 min)**, sin errores JS en el recorrido probado. Incluye vínculo al ID, foco en simulador, resultado de API, costes que cambian decisión, cuota común, recorte cero, extrapolación, formulario inválido, históricos con 48 observaciones y error/reintento con foco conservado.
+- QA: 28 capturas generales de siete rutas × cuatro tamaños, cuatro paneles de evaluación y un resultado negativo, además de las capturas de metodología MMM. Axe en las combinaciones y en los resultados Search sin infracciones detectadas; sin scroll horizontal global. Inspección manual de centro, resultados escritorio/móvil y waterfall negativo. Las tablas densas conservan scroll propio. No se declara auditoría humana de lector de pantalla.
+- Se corrigieron leyenda SEO/SEM sobre fechas y solapamiento de etiquetas del waterfall móvil. Las capturas de panel evitan artefactos de composición de la sidebar sticky en screenshot de página completa ya desplazada. Los cuatro recorridos afectados se repiten tras el ajuste de rótulos; resultado final en avances.
+
+### Arranque vacío, persistencia y reset
+
+```powershell
+docker compose -p margia-search-qa up -d --build --wait --wait-timeout 180 db backend
+docker compose -p margia-search-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py preparar
+docker compose -p margia-search-qa restart db backend
+docker compose -p margia-search-qa up -d --wait --wait-timeout 120 db backend
+docker compose -p margia-search-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py verificar
+docker compose -p margia-search-qa exec -T -e PYTHONPATH=/app -e MARGIA_VALIDACION=1 backend python tests/operacion.py reset
+docker compose -p margia-search-qa down
+```
+
+Pila nueva desde PostgreSQL vacío, migraciones 0001–0003, seed, MMM e históricos/Search correctos. Reinicio conserva decisión fixture, hechos, MMM, modelo Search y evaluación guardada exactos. Reset reconstruye mismos hechos y ambos modelos (MMM salvo duración), elimina evaluación y fixture; **52,718 s**. Pila aislada detenida conservando volumen; demo principal conservada.
+
+Skill `forms`: inputs con label, ayuda de soporte, min/max/required, validación también en API y submit habilitado para mostrar errores. Solo se bloquea durante POST válido (“DON'T disable submit buttons to block validation”). Resultados anunciados y errores con foco; sin llamadas IA, agentes ni servicios externos de runtime. Método y límites completos: [one_search.md](one_search.md).

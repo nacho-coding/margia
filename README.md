@@ -3,7 +3,7 @@
 
 MARGIA es una prueba de concepto avanzada de un gemelo digital comercial de marketing: conecta medición de medios, One Search (SEO + SEM), inteligencia creativa, experimentación y optimización económica sobre un único estado del negocio. El objetivo es decidir dónde invertir, dónde reducir inversión, cuándo experimentar y cómo aprender de los resultados.
 
-**Estado:** fundaciones y Medición (D2.1–D2.2): aplicación local con PostgreSQL, datos reproducibles, centro económico, MMM nacional ajustado y diagnóstico persistente, descomposición y curvas con soporte. El modelo mejora la referencia predictiva, pero bloquea recomendaciones por inestabilidad del reparto por canal. Radar económico, Search experimental, escenarios y optimización siguen pendientes. No es una implantación productiva ni evidencia de resultados comerciales reales.
+**Estado:** Días 1 y 2 verificados y One Search D3.1 disponible: PostgreSQL, datos reproducibles, centro económico, MMM nacional y primer radar de marca conectado al simulador. Evidencia histórica explícita, costes, incertidumbre, abstención y evaluaciones guardadas. El MMM mantiene bloqueado el reparto por canal; el radar utiliza evidencia Search independiente. Nuevos experimentos geográficos, valor de información, creatividad predictiva y escenarios siguen en las fases siguientes. No es una implantación productiva ni evidencia comercial real.
 
 ## Contrato de desarrollo
 
@@ -64,14 +64,16 @@ Exige escribir `RESTABLECER DEMO`; `-Confirmar` sirve para pruebas operativas ex
 
 ## Qué se puede utilizar
 
-- Centro de decisiones: cinco KPIs desde PostgreSQL, comparación equivalente, serie diaria, detalle de definición, filtros de mercado/periodo y CSV.
+- Centro de decisiones: cinco KPIs desde PostgreSQL, comparación equivalente, serie diaria, detalle de definición, filtros de mercado/periodo y CSV. Primer radar de marca con impacto estimado, riesgo, costes y enlace a la hipótesis real.
 - Medición: atribución por plataforma separada del MMM nacional; 104 semanas, dos ventanas rolling y 20 semanas finales reservadas, referencia estacional, descomposición reconciliada, bandas empíricas, curvas y marginal con soporte. Los filtros visuales no reentrenan; un mercado individual no recibe un modelo nacional desglosado artificialmente. [Método y límites](documentacion/modelo_mmm.md).
-- One Search: consultas SEO/SEM, intención, orden, paginación y cobertura declarada; sin estimación de recuperación todavía.
+- One Search: consultas SEO/SEM, serie de clics, históricos consultables y simulador de recorte 0–100 %, costes y cuota común/incremental, bandas, equilibrio y opción no actuar. Estima cambio total de pedidos por euro ahorrado; la recuperación SEO/directo no está identificada. Soporte experimental 25/50/75 %; mercado individual y otros horizontes se marcan como hipótesis. [Método y límites](documentacion/one_search.md).
 - Creatividad: 80 registros, 12 composiciones SVG originales, filtro por canal y detalle con CTR/CVR y denominadores.
 - Fiabilidad: cobertura, integridad de claves y margen, diagnóstico del MMM; manifiesto y checksum. Configuración: reset explícito que reconstruye también el modelo.
-- Laboratorios de experimentos y escenarios: rutas señaladas como en desarrollo. El radar económico y la aprobación de decisiones no están implementados.
+- Laboratorios de nuevos experimentos y escenarios: rutas señaladas como en desarrollo. La aprobación de decisiones no está implementada; una evaluación Search guardada no activa publicidad.
 
 Universo observado: 247.562 registros, 24 mercados ficticios, 730 días de negocio y medios, corte fijo 31/10/2026, semilla 260725. El MMM usa 728 días en semanas completas; dos días iniciales quedan fuera del ajuste. Búsqueda cubre los últimos 28 días; campañas, siete; creatividad, 28 días con mercados parciales por activo. Todas las fuentes son sintéticas.
+
+Se añaden 12 históricos experimentales de arranque, 288 asignaciones y 576 observaciones pre/post en tablas separadas. Son ramas sintéticas explícitas del mismo negocio; no se suman a ventas/inversión ni cambian el checksum original. El arranque conserva modelos y evaluaciones; el reset explícito reconstruye también esta evidencia.
 
 ## Verificación
 

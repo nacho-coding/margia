@@ -7,11 +7,11 @@ Plan de referencia: seis jornadas, 40–48 horas orientativas. Trabajo secuencia
 | D1.1 | P0 · 1 · 1 h | Leer todos los Markdown raíz, conservar historia Git, registrar arquitectura y backlog | Inventario, estado limpio, origin y HEAD remoto | Verificado |
 | D1.2 | P0 · 1 · 2 h | Shell premium en español, navegación adaptable, foco, filtros compartidos; módulos pendientes identificados | Typecheck, build, seis recorridos y 28 capturas con axe | Verificado |
 | D1.3 | P0 · 1 · 3 h | Compose producción: PostgreSQL, FastAPI, Next.js; migración, seed idempotente y manifiesto reproducible | Arranque limpio, salud, integridad, checksum, reinicio y reset | Verificado |
-| D1.4 | P0 · 1 · 2 h | Centro desde API con ventas propias, pedidos, inversión y contribución reconciliados, comparación equivalente y exportación | 18 pytest, API, filtros, exportación y QA visual | Verificado; push pendiente de permisos |
+| D1.4 | P0 · 1 · 2 h | Centro desde API con ventas propias, pedidos, inversión y contribución reconciliados, comparación equivalente y exportación | 18 pytest, API, filtros, exportación y QA visual | Verificado y publicado |
 | D2.1 | P0 · 2 · 3 h | MMM semanal de pedidos: train/holdout cronológico, naive, grid reducido y diagnósticos persistidos | Sin fuga, métricas, sensibilidad, comparación baseline | Verificado; reparto inestable bloquea recomendaciones |
 | D2.2 | P0 · 2 · 2 h | Medición: atribución separada, curvas con soporte, descomposición reconciliada y bandas empíricas con límites | 26 pytest, API, nueve recorridos, capturas y axe | Verificado; bandas condicionales, no IC causal |
-| D2.3 | P0 · 2 · 2 h | Radar económico y primera hipótesis marca; ranking explicable sin sumar oportunidades solapadas | Fixture + evidencia y enlaces con ID | Pendiente; requiere evidencia Search, no inferir ahorro de atribución ni MMM bloqueado |
-| D3.1 | P0 · 3 · 2 h | One Search: estimación por evidencia histórica, recorte/recuperación/costes y equilibrio | Caso 12.000 € / −21.000 €, límites y abstención | Pendiente |
+| D2.3 | P0 · 2 · 2 h | Radar económico y primera hipótesis marca; ranking explicable sin sumar oportunidades solapadas | Evidencia histórica, economía común, hipótesis con ID y recorrido al simulador | Verificado; Día 2 cerrado |
+| D3.1 | P0 · 3 · 2 h | One Search: evidencia histórica, recorte/costes/equilibrio; efecto directo por euro cuando recuperación no identificable | 39 pytest y recorrido positivo/negativo, soporte, pooling y abstención | Verificado; recuperación no identificada, alternativa contractual implementada |
 | D3.2 | P0 · 3 · 3 h | Geo: parejas, aleatorización, MDE, observaciones nuevas, IC por unidades y evaluación versionada | Nulo/negativo, semilla, guardrails, sin fuga de verdad | Pendiente |
 | D3.3 | P0 · 3 · 2 h | Valor de información discreto con costes y horizonte comparable | 0 ≤ EVSI ≤ EVPI, prueba no rentable, UI | Pendiente |
 | D4.1 | P0 · 4 · 2 h | Biblioteca: 12 diseños locales/80 registros; modelo ligero, tres variantes y brief por reglas | Licencias, holdout por activo y tiempo, CTR/CVR separados | Pendiente |
@@ -33,4 +33,4 @@ Plan de referencia: seis jornadas, 40–48 horas orientativas. Trabajo secuencia
 
 ## Siguiente corte verificable
 
-Conectar D2.3 con D3.1: evidencia histórica de recorte, estimador Search y economía común antes de publicar impacto esperado en el radar. No usar la atribución ni el reparto MMM inestable como recuperación identificada. El Día 2 completo no se declara cerrado mientras D2.3 siga pendiente. D3.2/D3.3 y los días 4–6 mantienen su alcance.
+**Día 2 cerrado**, incluida su dependencia de evidencia Search. No se ha usado atribución ni MMM inestable como recuperación identificada. Siguiente hito: D3.2, nuevos experimentos geográficos diseñados y ejecutados por el usuario, seguido de D3.3, valor de información. Los históricos de arranque no sustituyen esas ejecuciones nuevas. Los días 4–6 mantienen su alcance.

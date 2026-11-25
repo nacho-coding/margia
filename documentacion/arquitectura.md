@@ -1,4 +1,4 @@
-# Arquitectura implementada · Fundaciones y Medición
+# Arquitectura implementada · Fundaciones, Medición y primer radar
 
 El [RFC](../RFC.md) recoge el diseño objetivo; este archivo describe únicamente el incremento existente.
 
@@ -46,4 +46,12 @@ El MMM solo usa siete canales de demanda; SEM marca sigue en los hechos observad
 
 ## Pendientes deliberados
 
-Radar económico estimado, recuperación experimental, geo/A-B, valor de información, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D2.3–D5. Los módulos correspondientes se identifican como en desarrollo. El generador inicial no sustituye esos estimadores ni un gemelo causal completo. La respuesta creativa del negocio y el mundo experimental se ampliarán junto con sus pruebas antes de utilizarse en escenarios.
+Nuevas ejecuciones geo/A-B, valor de información, orquestador de escenarios, optimización, decisiones de usuario e incidentes alternativos: backlog D3.2–D5. Los módulos correspondientes se identifican como en desarrollo. Los históricos de arranque no se hacen pasar por nuevas ejecuciones. La respuesta creativa del negocio y el mundo experimental se ampliarán con sus pruebas antes de utilizarse en escenarios.
+
+## One Search y radar
+
+La migración 0003 añade protocolo experimental, asignaciones por par, observaciones por unidad/periodo y evaluaciones Search guardadas. `app/datos/historia_search.py` construye las fixtures explícitas usando `captura.py`, mecanismo compartido con el generador base cuyo checksum permanece intacto. El arranque y reset preparan evidencia y estimador Search después del MMM, bajo el mismo advisory lock.
+
+`app/modelos/search.py` solo recibe observaciones de pre/post, brazo, par, intensidad y ahorro. Estima cambio total de pedidos por euro mediante ratios pre y bootstrap del par completo; no lee el mecanismo del mundo ni identifica recuperación SEO/directo. `search_servicio.py` carga datos, valora mediante el dominio económico y sirve tanto radar como simulador. No hay cálculo económico en JS ni un negocio paralelo de Search.
+
+El radar calcula una vista de la hipótesis persistente del modelo; un GET no crea ejecuciones. El POST de simulación guarda inputs/resultado inmutables por contenido y muestra reutilización al repetir. El enlace incluye ID real y lleva el foco al simulador. Fuente, alcance nacional, pooling, horizonte, extrapolación y costes comparables son explícitos. Modelo/intervalos/evaluaciones: [one_search.md](one_search.md).

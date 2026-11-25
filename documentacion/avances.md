@@ -124,3 +124,48 @@ Modelo vigente `mmm-4246cd7b830a0a9f7cfc`, versión `mmm-1.0.1`; ajuste observad
 - **D2.3 no cerrado.** Próximo corte: evidencia histórica y estimador Search (D3.1) para alimentar un radar económico defendible. Mientras tanto se mantiene la hipótesis observada del centro sin impacto esperado inventado. La decisión de orden queda registrada en decisiones.md.
 - Continúan pendientes geo/EVSI, creatividad predictiva/A-B, escenarios/orquestador/optimización, decisiones e incidencias. El Día 2 completo y la POC no se declaran terminados.
 - Sin agentes/subagentes, LLM locales, GPU, dependencias nuevas ni servicios externos de runtime. No se han modificado los contratos de producto para acomodar el resultado.
+
+## 25/11/2026 · Cierre pendiente D2.3 y dependencia Search
+
+- El usuario solicita resolver la dependencia, sin arrastrar D2.3. Se mantiene el contrato matemático: implementar evidencia histórica y estimador directo de cambio de pedidos por euro ahorrado, sin inferir recuperación de SEO/SEM. Se cerrarán radar y simulador juntos, tras pruebas.
+- Inspección inicial: árbol limpio, `main` siete commits por delante; contratos ya revisados y conservados. Plan: históricos explícitos de arranque sin alterar hechos ni checksum, asignaciones/observaciones persistentes, estimador por pares con pooling e incertidumbre, economía compartida, hipótesis con ID, simulaciones guardadas y radar funcional.
+- Pruebas previstas: preservación del mundo y su hash; reproducibilidad de históricos, aleatorización/unidades, estimador sin verdad/futuro; recorte 0/100, costes comunes/incrementales, pérdidas y equilibrio, soporte, abstención y no doble gasto. API, persistencia/reset aislados, pytest/Ruff, lint/TypeScript/build y recorrido visual/Playwright.
+- Skill Modern Web Guidance: consultada guía `forms` para validación nativa, labels, rangos y envío accesible; no se añaden dependencias.
+- Acceso GitHub resuelto por el usuario durante el incremento: `git fetch origin main` sin divergencias y `git push origin main` correcto (`ccf1a64..ea9a8ab`). Los siete commits previos ya están publicados. El código nuevo permanece sin confirmar hasta superar sus pruebas.
+
+## 25/11/2026 · Día 2 cerrado: radar y One Search verificados
+
+### Entregado y dependencia resuelta
+
+- **D2.3 cerrado**, con D3.1 implementado como dependencia: primer radar económico de marca enlazado a una hipótesis real y al simulador. El centro muestra evidencia histórica disponible; no sigue anunciando este trabajo como próximo incremento.
+- 12 históricos sintéticos explícitos de arranque, 288 asignaciones y 576 observaciones pre/post. Mismo mecanismo de captura del universo, pares aleatorizados, placebo y subsemillas registradas. No se añaden a los KPIs ni se hacen pasar por nuevas ejecuciones del usuario.
+- Modelo `search-1.0.0` (`search-90c0cd70be0bef7b8d7a`), bootstrap de 12 pares completos y pooling nacional. Estima cambio total de pedidos por euro ahorrado; recuperación SEO/directo no identificada, como permite el contrato matemático. No depende del reparto MMM bloqueado.
+- Simulador 0–100 %, soporte 25/50/75 %, costes experimentales, cuota común/incremental, contribución, bandas, riesgo, equilibrio en pedidos, comparación y waterfall reconciliados desde Python. Mercado individual, otro horizonte o extrapolación se señalan como hipótesis; escenarios negativos recomiendan mantener.
+- Evaluaciones inmutables por contenido, input/snapshot/modelo/semilla guardados y reutilización declarada. Históricos consultables con asignaciones y observaciones. Enlace desde radar lleva ID y foco al formulario; errores conservan valores y permiten reintentar.
+
+### Evidencia ejecutada
+
+| Comando / comprobación | Resultado |
+|---|---|
+| `docker compose up -d --build --wait --wait-timeout 180` | Build de producción, TypeScript y tres servicios saludables |
+| `docker compose run --rm --no-deps --volume "${PWD}/backend:/app" backend python -m pytest -q -p no:cacheprovider` | 39 passed, 1 warning en 29,10 s; preservación exacta del mundo, dominio, modelos y API |
+| `docker compose exec -T backend ruff check --no-cache .` | Correcto; imports iniciales ordenados con Ruff |
+| `npm.cmd run lint` / `npm.cmd run typecheck` | Sin errores |
+| `npm.cmd run test:e2e` | 13 passed (1,8 min); incluye regresión de fundaciones y MMM |
+| `npm.cmd run test:e2e -- tests/search.spec.ts` | Repetición final tras ajuste móvil: 4 passed (20,2 s) |
+| Capturas / axe | 28 vistas generales, cuatro paneles de evaluación y un negativo, más dos de MMM; cero infracciones detectadas y sin desbordamiento global |
+| QA visual manual | Centro actualizado, simulador 1440/1280/móvil y waterfall negativo; etiquetas móviles acortadas y leyenda SEO/SEM separada de fechas |
+| Pila nueva `margia-search-qa` | Migraciones 0001–0003 desde PostgreSQL vacío; seed y modelos preparados |
+| `tests/operacion.py preparar/verificar` tras reinicio | Conserva decisión fixture, hechos, MMM, evidencia Search y evaluación guardada exacta |
+| `tests/operacion.py reset` aislado | Reconstruye mismos hechos y modelos, elimina evaluaciones/fixture; 52,718 s |
+| `docker compose -p margia-search-qa down` | Pila aislada detenida sin borrar volumen; principal conservada |
+
+El checksum original sigue exactamente en `6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`. Ejemplo calculado, no fijado en UI: recorte 50 %, 28 días nacionales, costes nuevos cero → ahorro 34.898,03 €, cambio de margen −18.401,94 €, neto 16.496,09 €, p05–p95 −7.104,57 a 39.307,73 €, 9,5 % de draws negativos. Con cuota incremental de 100.000 € el resultado es negativo y recomienda mantener. No se eliminan pérdidas ni se estrechan bandas para favorecer el relato.
+
+### Git y siguiente hito
+
+- Backend probado: `2d4c194` — «feat: estimar efecto de marca con evidencia experimental y economía común».
+- Interfaz probada: `c9fd02d` — «feat: conectar radar de marca con simulación y evidencia consultable». Cierre documental separado; identidad temporal Codex, sin alterar configuración global.
+- Acceso `ignaciofontal` efectivo y 403 resuelto. Siete commits previos y los dos nuevos de código publicados con push normal a `origin/main` (`ea9a8ab..c9fd02d`), sin cambiar remoto ni forzar historia. `git ls-remote origin refs/heads/main` verifica `c9fd02d5761d10eb2d2f93d6123fc0b3e911d503`. El cierre documental se confirma y publica como commit separado.
+- **No queda D2.3 pendiente. Días 1 y 2 cerrados; D3.1 disponible.** Siguiente hito del plan: D3.2, nuevos experimentos geográficos con diseño, ejecución y actualización de evidencia, seguido de D3.3/valor de información. No se confunden las fixtures de arranque con esas funciones futuras ni se declara terminada la POC completa.
+- Método y límites: [one_search.md](one_search.md). Pruebas y advertencias: [validacion.md](validacion.md). Permanece la deprecación conocida de httpx/TestClient. Sin agentes, LLM, GPU, dependencias nuevas ni datos reales.
