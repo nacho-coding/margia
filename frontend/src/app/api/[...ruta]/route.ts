@@ -30,3 +30,4 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ ruta:
 }
 export const GET = proxy;
 export const POST = proxy;
+export const PATCH = proxy;
