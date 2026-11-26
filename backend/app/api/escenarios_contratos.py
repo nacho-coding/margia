@@ -58,3 +58,31 @@ class EjecucionEscenarioRespuesta(BaseModel):
     modelos: dict[str, Any]
     resultado: dict[str, Any]
     reutilizada: bool
+
+
+class EditarBorrador(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    revision: int = Field(ge=1)
+    parametros: ParametrosEscenario
+
+
+class RevisionEsperada(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    revision: int = Field(ge=1)
+
+
+class ArchivarEscenario(RevisionEsperada):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    motivo: str = Field(min_length=10, max_length=1000)
+
+
+class DuplicarEscenario(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    nombre: str = Field(min_length=3, max_length=100)
+
+
+class RegistrarDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    plan: Literal["base", "ahorro", "reinversion", "optimizacion"]
+    estado: Literal["aprobado", "rechazado"]
+    motivo: str = Field(min_length=10, max_length=1000)

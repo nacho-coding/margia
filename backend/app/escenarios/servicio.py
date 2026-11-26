@@ -9,6 +9,7 @@ from app.api.consultas import Filtro, fiabilidad, snapshot_actual, totales
 from app.api.escenarios_contratos import ParametrosEscenario
 from app.creatividad.experimentos import aprendizaje
 from app.creatividad.servicio import consultar, seleccion
+from app.escenarios.gestion import evento, resumir, revision
 from app.escenarios.motor import VERSION_ESCENARIOS, MotorEscenarios, huella, soportes
 from app.escenarios.proyeccion import proyectar_base
 from app.modelos.search_servicio import search_actual
@@ -107,6 +108,8 @@ def catalogo(db, seleccion_id=None, simulacion_id=None):
         elecciones.append(dict(id=s.id, nombre=v["nombre"], canal=p["entradas"]["canal"], variante=v, pretest=p["id"]))
     ejecuciones = db.scalars(select(Ejecucion).where(Ejecucion.snapshot_id == snapshot.id)
         .order_by(Ejecucion.creado.desc(), Ejecucion.id).limit(30)).all()
+    escenarios = db.scalars(select(Escenario).where(Escenario.snapshot_id == snapshot.id)
+        .order_by(Escenario.creado.desc(), Escenario.id).limit(50)).all()
     defecto = ParametrosEscenario(semilla=snapshot.semilla+5100,
         presupuesto_total=referencia["inversion"], recorte_max_pct=search.resultado["soporte"][-1]*100,
         limites=[{k: limite[k] for k in ("canal", "minimo", "maximo")} for limite in limites]).model_dump()
@@ -123,7 +126,8 @@ def catalogo(db, seleccion_id=None, simulacion_id=None):
         inicio=(snapshot.corte+timedelta(days=1)).isoformat(), fin=(snapshot.corte+timedelta(days=28)).isoformat(),
         defecto=defecto, referencia=referencia, proyeccion={k: v for k, v in base.items() if k != "errores_centrados"},
         canales=limites, selecciones=elecciones, origen_search=origen, modelos=dict(mmm=resumen_modelo(mmm), search=resumen_modelo(search)),
-        filas=[dict(id=e.id, escenario=e.escenario_id, nombre=e.entradas["nombre"], creado=e.creado.isoformat(),
+        escenarios=[resumir(s) for s in escenarios],
+        filas=[dict(id=e.id, escenario=e.escenario_id, revision=e.revision, nombre=e.entradas["nombre"], creado=e.creado.isoformat(),
             recomendacion=e.resultado["optimizacion"]["recomendacion"]) for e in ejecuciones])
 
 
@@ -137,14 +141,14 @@ def publico(valor):
 
 def detalle(db, eid, reutilizada=False):
     e = db.get(Ejecucion, eid)
-    if not e or e.snapshot_id != snapshot_actual(db).id:
-        raise HTTPException(404, "La ejecución no pertenece al snapshot activo.")
+    if not e:
+        raise HTTPException(404, "No existe esta ejecución guardada.")
     return dict(id=e.id, escenario=e.escenario_id, snapshot=e.snapshot_id, revision=e.revision,
         version=e.version, semilla=e.semilla, creado=e.creado.isoformat(), entradas=e.entradas,
         modelos=e.modelos, resultado=publico(e.resultado), reutilizada=reutilizada)
 
 
-def ejecutar(db, entrada):
+def ejecutar(db, entrada, borrador=None):
     db.execute(text("SELECT pg_advisory_xact_lock(260725)"))
     if fiabilidad(db).estado == "bloqueado":
         raise HTTPException(409, "La integridad de los datos impide ejecutar una comparación nueva; consulta el historial.")
@@ -156,10 +160,16 @@ def ejecutar(db, entrada):
         creativo_historico=creatividad["modelo_historico"] if creatividad else None,
         creativo_ab=creatividad["modelo_ab"] if creatividad else None, search_origen=origen["modelo"] if origen else None)
     checksum = huella(dict(semanas=semanas, referencia=referencia, creatividad=creatividad))
-    sid = "esc-"+huella(dict(snapshot=snapshot.id, entradas=e))[:24]
-    eid = "ejec-"+huella(dict(escenario=sid, version=VERSION_ESCENARIOS, modelos=modelos, checksum=checksum))[:24]
+    sid = borrador.id if borrador else "esc-"+huella(dict(snapshot=snapshot.id, entradas=e))[:24]
+    identidad = dict(escenario=sid, version=VERSION_ESCENARIOS, modelos=modelos, checksum=checksum)
+    if borrador:
+        identidad.update(revision=borrador.revision, entradas=e)
+    eid = "ejec-"+huella(identidad)[:24]
     if db.get(Ejecucion, eid):
         return detalle(db, eid, True)
+    escenario = borrador or db.get(Escenario, sid)
+    if escenario and escenario.estado == "archivado":
+        raise HTTPException(409, "El escenario está archivado; duplícalo para ejecutar otra comparación.")
     inicio = time.perf_counter()
     try:
         resultado = MotorEscenarios(semanas, mmm.resultado, search.resultado, referencia, e, creatividad).ejecutar()
@@ -168,12 +178,13 @@ def ejecutar(db, entrada):
     resultado.update(inicio=(snapshot.corte+timedelta(days=1)).isoformat(),
         fin=(snapshot.corte+timedelta(days=28)).isoformat(), segundos=round(time.perf_counter()-inicio, 4), origen_search=origen)
     resultado["canales"] = [dict(id=c.id, nombre=c.nombre, color=c.color) for c in db.scalars(select(Canal).order_by(Canal.id))]
-    escenario = db.get(Escenario, sid)
     if not escenario:
         escenario = Escenario(id=sid, snapshot_id=snapshot.id, nombre=e["nombre"], revision=1,
             estado="evaluado", parametros=e)
         db.add(escenario)
         db.flush()
+        revision(db, escenario)
+    evento(db, escenario, "evaluado", f"Comparación calculada y guardada: {eid}.")
     db.add(Ejecucion(id=eid, escenario_id=sid, snapshot_id=snapshot.id, revision=escenario.revision,
         version=VERSION_ESCENARIOS, semilla=e["semilla"], entradas=e, modelos=modelos, checksum_fuentes=checksum,
         resultado=resultado))

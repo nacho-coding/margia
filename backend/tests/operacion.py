@@ -69,6 +69,23 @@ with SessionLocal.begin() as db:
         assert escenario.status_code == 200, escenario.text
         escenario = {**escenario.json(), "reutilizada": False}
         ejecucion = db.get(Ejecucion, escenario["id"])
+        borrador = client.post("/api/v1/escenarios", json=dict(nombre="Fixture operativa de borrador")).json()
+        borrador = client.patch("/api/v1/escenarios/"+borrador["id"], json=dict(revision=1,
+            parametros={**borrador["parametros"], "cuota_plataforma": 50})).json()
+        ejecucion_borrador = client.post("/api/v1/escenarios/"+borrador["id"]+"/ejecutar",
+            json=dict(revision=2))
+        assert ejecucion_borrador.status_code == 200, ejecucion_borrador.text
+        ejecucion_borrador = ejecucion_borrador.json()
+        decision = client.post("/api/v1/escenarios/ejecuciones/"+ejecucion_borrador["id"]+"/decision",
+            json=dict(plan="base", estado="aprobado", motivo="Mantener la estrategia en la fixture operativa de persistencia."))
+        assert decision.status_code == 200, decision.text
+        decision = decision.json()
+        archivo = client.post("/api/v1/escenarios/"+borrador["id"]+"/archivar",
+            json=dict(revision=2, motivo="Archivo explícito de la fixture operativa sin eliminar la decisión."))
+        assert archivo.status_code == 200, archivo.text
+        borrador = archivo.json()
+        exportaciones = {f: client.get("/api/v1/escenarios/ejecuciones/"+ejecucion_borrador["id"]+
+            "/exportar?formato="+f).text for f in ("csv", "md")}
         expected.write_text(json.dumps({"checksum": snapshot.checksum,
                                         "conteos": snapshot.manifiesto["conteos"],
                                         "modelo": modelo_reproducible,
@@ -81,7 +98,9 @@ with SessionLocal.begin() as db:
                                         "pretest": pretest, "seleccion_creativa": seleccion, "ab_creativo": ab,
                                         "modelo_ab": modelo_ab.resultado, "modelo_ab_creado": modelo_ab.creado.isoformat(),
                                         "escenario": escenario, "ejecucion_completa": ejecucion.resultado,
-                                        "ejecucion_creada": ejecucion.creado.isoformat()}), encoding="utf-8")
+                                        "ejecucion_creada": ejecucion.creado.isoformat(),
+                                        "borrador": borrador, "ejecucion_borrador": ejecucion_borrador,
+                                        "decision_real": decision, "exportaciones": exportaciones}), encoding="utf-8")
         print("Fixtures de persistencia, MMM, geo, Search, creatividad, A/B y escenarios preparadas en PostgreSQL de validación.")
     elif action == "verificar":
         assert db.get(Decision, "qa-persistencia") is not None
@@ -113,7 +132,12 @@ with SessionLocal.begin() as db:
         repetida = client.post("/api/v1/escenarios/ejecutar", json=datos["escenario"]["entradas"])
         assert repetida.status_code == 200 and repetida.json()["reutilizada"]
         assert repetida.json()["resultado"] == datos["escenario"]["resultado"]
-        print("Reinicio: hechos, modelos, Search/geo, pretest/A-B y comparación con sus draws completos, semilla y fecha exacta conservados sin reentrenar ni reejecutar.")
+        assert client.get("/api/v1/escenarios/"+datos["borrador"]["id"]).json() == datos["borrador"]
+        assert client.get("/api/v1/escenarios/ejecuciones/"+datos["ejecucion_borrador"]["id"]).json() == datos["ejecucion_borrador"]
+        assert client.get("/api/v1/decisiones/"+datos["decision_real"]["id"]).json() == datos["decision_real"]
+        for formato, contenido in datos["exportaciones"].items():
+            assert client.get("/api/v1/escenarios/ejecuciones/"+datos["ejecucion_borrador"]["id"]+"/exportar?formato="+formato).text == contenido
+        print("Reinicio: hechos, modelos, Search/geo, creatividad/A-B, draws completos, borrador revisado/archivado, decisión y exportaciones exactas conservados sin reejecutar.")
     elif action == "reset":
         before = snapshot.checksum
         assert client.post("/api/v1/demo/reset", json={"confirmacion": "NO"}).status_code == 422
@@ -142,6 +166,10 @@ with SessionLocal.begin() as db:
         assert client.get("/api/v1/creativos/pruebas").json()["filas"] == []
         assert client.get("/api/v1/escenarios/ejecuciones/"+datos["escenario"]["id"]).status_code == 404
         assert client.get("/api/v1/escenarios").json()["filas"] == []
+        assert client.get("/api/v1/escenarios").json()["escenarios"] == []
+        assert client.get("/api/v1/escenarios/"+datos["borrador"]["id"]).status_code == 404
+        assert client.get("/api/v1/decisiones/"+datos["decision_real"]["id"]).status_code == 404
+        assert client.get("/api/v1/escenarios/ejecuciones/"+datos["ejecucion_borrador"]["id"]+"/exportar").status_code == 404
         with SessionLocal() as despues:
             actual_creativo = creatividad_actual(despues, snapshot)
             assert {k: v for k, v in actual_creativo.resultado.items() if k != "segundos_ajuste"} == creativo_reproducible

@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 
 from app.datos.seed import inicializar
-from app.persistencia.tablas import NegocioDiario, Snapshot
+from app.persistencia.tablas import Decision, NegocioDiario, Snapshot
 
 
 def test_salud_contexto_y_seed_idempotente(client, db):
@@ -41,12 +41,15 @@ def test_vistas_paginacion_y_cobertura(client):
     assert client.get("/api/v1/creativos?categoria=sin-datos").status_code == 422
 
 
-def test_fiabilidad_exportacion_y_reset_protegido(client):
+def test_fiabilidad_exportacion_y_reset_protegido(client, db):
     calidad = client.get("/api/v1/fiabilidad").json()
     assert calidad["estado"] == "limitado"
     assert calidad["reglas"][0]["valor"] == 100
     assert calidad["reglas"][1]["valor"] == 0
-    assert client.get("/api/v1/decisiones").json()["filas"] == []
+    historial = client.get("/api/v1/decisiones")
+    assert historial.status_code == 200
+    esperadas = db.scalars(select(Decision).order_by(Decision.creado.desc()).limit(25)).all()
+    assert [f["id"] for f in historial.json()["filas"]] == [d.id for d in esperadas]
     exportacion = client.get("/api/v1/exportar/negocio.csv?mercado=m01")
     assert exportacion.status_code == 200
     assert len(exportacion.text.splitlines()) == 29

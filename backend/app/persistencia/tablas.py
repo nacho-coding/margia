@@ -267,7 +267,27 @@ class Escenario(Base):
     nombre: Mapped[str] = mapped_column(String(100))
     revision: Mapped[int] = mapped_column(Integer, default=1)
     estado: Mapped[str] = mapped_column(String(25))
+    editable: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     parametros: Mapped[dict] = mapped_column(JSON)
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RevisionEscenario(Base):
+    __tablename__ = "revision_escenario"
+    __table_args__ = (CheckConstraint("revision >= 1"),)
+    escenario_id: Mapped[str] = mapped_column(ForeignKey("escenario.id"), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, primary_key=True)
+    parametros: Mapped[dict] = mapped_column(JSON)
+    creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class EventoEscenario(Base):
+    __tablename__ = "evento_escenario"
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    escenario_id: Mapped[str] = mapped_column(ForeignKey("escenario.id"), index=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    tipo: Mapped[str] = mapped_column(String(25))
+    motivo: Mapped[str] = mapped_column(String(1000))
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

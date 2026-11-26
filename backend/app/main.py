@@ -43,6 +43,7 @@ from app.creatividad.servicio import asegurar_creatividad
 from app.datos.generador import generar
 from app.datos.historia_search import asegurar_historia
 from app.dominio.economia import cociente
+from app.escenarios.decisiones import consultar as consultar_decision_guardada
 from app.modelos.search_servicio import (
     asegurar_search,
     evidencia,
@@ -270,7 +271,14 @@ def obtener_fiabilidad(db: Db):
 def obtener_decisiones(db: Db):
     filas = db.scalars(select(Decision).order_by(Decision.creado.desc()).limit(25)).all()
     return {"filas": [dict(id=f.id, estado=f.estado, motivo=f.motivo, fecha=f.creado.isoformat(),
-                          snapshot=f.snapshot_id) for f in filas], "evidencia": "Decisiones simuladas registradas"}
+                          snapshot=f.snapshot_id, ejecucion=f.ejecucion_id,
+                          escenario=f.evidencia.get("escenario"), plan=f.evidencia.get("plan")) for f in filas],
+            "evidencia": "Decisiones simuladas registradas; ninguna activa publicidad"}
+
+
+@app.get("/api/v1/decisiones/{decision_id}")
+def obtener_decision(decision_id: str, db: Db):
+    return consultar_decision_guardada(db, decision_id)
 
 
 @app.get("/api/v1/demo/manifiesto")
