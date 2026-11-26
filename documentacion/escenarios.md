@@ -1,6 +1,6 @@
 # Orquestador de escenarios y búsqueda con restricciones
 
-Hito P0 D4.3. Proyección y estimaciones sobre datos enteramente sintéticos. Un único motor compara **base, A conservar ahorro y B reinvertir** y utiliza la misma valoración económica para la rejilla. No activa publicidad ni registra aprobaciones. El MMM original conserva su diagnóstico bloqueado; no se fuerza una recomendación de reparto.
+Hitos P0 D4.3–D5.1. Proyección y estimaciones sobre datos enteramente sintéticos. Un único motor compara **base, A conservar ahorro y B reinvertir** y utiliza la misma valoración económica para la rejilla. Las decisiones se registran de forma simulada y nunca activan publicidad. El MMM original conserva su diagnóstico bloqueado; no se fuerza una recomendación de reparto.
 
 ## Alcance y referencia
 
@@ -108,4 +108,43 @@ La pantalla muestra base/A/B, denominadores, costes, bandas, waterfall con tabla
 | POST | `/escenarios/ejecutar` | Comparar, buscar candidato y guardar/reutilizar ejecución |
 | GET | `/escenarios/ejecuciones/{id}` | Recuperar el resultado inmutable |
 
-El reinicio conserva draws, referencias y fecha exacta sin reejecutar. Reset explícito elimina configuraciones/ejecuciones de usuario y reproduce el mismo universo; se comprueba exclusivamente en QA aislada. El checksum original permanece intacto. El CRUD completo de borradores, duplicación, archivo, decisiones con motivo y CSV/Markdown corresponde a D5; todavía no se presenta como disponible. Pruebas reales, incidencias y resultados en [validacion.md](validacion.md).
+El reinicio conserva draws, referencias y fecha exacta sin reejecutar. Reset explícito elimina configuraciones/ejecuciones de usuario y reproduce el mismo universo; se comprueba exclusivamente en QA aislada. El checksum original permanece intacto. Pruebas reales, incidencias y resultados en [validacion.md](validacion.md).
+
+## Borradores y revisiones (D5.1)
+
+La migración aditiva **0006** añade `escenario.editable`, `revision_escenario` y `evento_escenario`. Recupera la revisión de las configuraciones existentes, conservando parámetros, resultados y fechas. Las configuraciones D4.3 siguen siendo de solo lectura y se pueden duplicar. Un borrador nuevo tiene ID propio y revisión 1; guardar parámetros distintos crea otra revisión inmutable. Guardar los mismos no incrementa la revisión.
+
+Editar, ejecutar y archivar exigen la revisión esperada. El lock transaccional común con reset y la comparación de revisión evitan sobrescribir otra edición: conflicto HTTP 409, sin pérdida de entradas. Ejecutar un borrador incluye su ID, revisión, parámetros normalizados, versiones y huella de fuentes en la identidad del resultado. Una lectura o un guardado no ejecuta MC. La comparación rápida conserva el endpoint y los IDs D4.3.
+
+Estados del escenario: `borrador → archivado`, o `evaluado → archivado` para configuraciones históricas. Ejecutar un borrador conserva su carácter editable; la ejecución captura la revisión concreta. Archivar exige motivo de 10–1.000 caracteres, registra fecha de sistema y no borra revisiones, ejecuciones o decisiones. Reenvío idéntico de archivo sin efecto adicional; cambiar el motivo ya registrado devuelve 409. Para continuar, duplicar. No hay borrado físico individual: el CRUD usa archivo para conservar trazabilidad. Reset explícito sigue siendo el único borrado conjunto.
+
+El catálogo muestra los últimos 50 escenarios del snapshot activo y las últimas 30 ejecuciones. El detalle recupera todas las revisiones/ejecuciones del escenario, también archivado. Los resultados y decisiones por ID se pueden consultar aunque ya no pertenezcan al snapshot activo; esa lectura histórica no autoriza una aprobación nueva.
+
+## Decisiones y guardrails
+
+Se elige uno de cuatro planes guardados: base, A, B o candidato de la rejilla. Solo existe una decisión terminal por ejecución: `aprobado` o `rechazado`, con motivo obligatorio de 10–1.000 caracteres. Un reenvío idéntico devuelve el mismo registro; cambiar plan, resolución o motivo devuelve 409. Para reconsiderar se prepara otra ejecución, mediante una revisión nueva o una copia. La decisión conserva entradas, snapshot, revisión, modelos, semilla, periodo, huellas, métricas, presupuesto, banda y guardrails al registrar.
+
+Antes de aprobar se revalidan en servidor snapshot activo, integridad crítica, archivo/revisión del borrador, versión del motor, huella de observaciones y calibración temporal de la base. Cada plan conserva sus restricciones, soporte y límite de probabilidad de pérdida. Un cambio de contribución esperada negativa no se aprueba aunque se tolere todo el riesgo; mantener sigue disponible cuando es factible.
+
+La dependencia es específica: recortar exige Search vigente/no bloqueado y dentro de soporte; reinvertir exige MMM vigente/optimizable/no bloqueado; lanzar creatividad exige que siga coincidiendo su recurso y evidencia de contexto. El bloqueo del MMM no veta mantener ni una alternativa Search que cumpla sus propias comprobaciones. Los motivos limitantes del plan se conservan: no se habilitan por el simple hecho de escribir una justificación.
+
+La base y las bandas continúan siendo proyecciones/estimaciones condicionales, sin garantía causal. La aprobación limitada registra la decisión simulada y su evidencia; no certifica rentabilidad real ni activa campañas. Se permite registrar un rechazo/abstención incluso con plan bloqueado, sin candidato o fuentes actualmente indisponibles. Las decisiones anteriores permanecen terminales aunque cambie el estado actual; el detalle identifica los guardrails **al registrar**.
+
+## Exportaciones y navegación
+
+CSV UTF-8 con BOM y separador `;`, cifras numéricas con coma decimal, filas de trazabilidad/economía/bandas/presupuestos/condiciones y decisión si existe. Markdown con comparación por columnas, inputs, fuentes/versiones/semilla, supuestos y decisión. Ambas exportaciones leen el resultado congelado: no calculan ni entrenan. El mismo registro produce el mismo archivo; una decisión posterior añade su registro sin alterar las métricas. Los textos libres se protegen contra fórmulas CSV y se escapan para Markdown/HTML; los importes negativos conservan su tipo numérico.
+
+La interfaz permite guardar antes de ejecutar, editar/duplicar/archivar con motivo, revisar entradas/resultados previos, aprobar/rechazar y abrir la decisión por ID desde el centro o la comparación. Descargas reales desde el proxy del mismo origen. Formularios nativos, errores con foco y entradas conservadas, diálogo modal nativo con foco inicial seguro y retorno al invocador. Las fechas del registro son del sistema, separadas del horizonte sintético.
+
+| Método | Ruta bajo `/api/v1` | Acción |
+|---|---|---|
+| POST | `/escenarios` | Guardar borrador, sin ejecutar |
+| GET / PATCH | `/escenarios/{id}` | Consultar o editar con `{revision, parametros}` |
+| POST | `/escenarios/{id}/ejecutar` | Ejecutar la revisión esperada |
+| POST | `/escenarios/{id}/duplicar` | Copiar parámetros con nombre nuevo |
+| POST | `/escenarios/{id}/archivar` | Archivar con revisión y motivo |
+| GET / POST | `/escenarios/ejecuciones/{id}/decision` | Consultar guardrails/decisión o registrar `{plan, estado, motivo}` |
+| GET | `/escenarios/ejecuciones/{id}/exportar?formato=csv` | CSV; `md` para Markdown |
+| GET | `/decisiones` y `/decisiones/{id}` | Historial y detalle inmutable |
+
+La tabla `decision` previa se reutiliza con unicidad por ejecución; su FK histórica sigue siendo lógica para conservar la fixture operativa inicial sin ejecución. La API siempre comprueba la existencia del resultado y solo escribe decisiones sobre él. No se incorporan usuarios, RBAC ni activación externa. D5.2 mantiene pendientes snapshots de incidencia/restauración; D5.3 el recorrido integrado final y guion, y D6 la aceptación global.

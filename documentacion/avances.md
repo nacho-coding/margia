@@ -406,3 +406,52 @@ La API principal confirma cero ejecuciones de QA, MMM bloqueado/no optimizable, 
 - Fetch sin divergencias; push normal correcto (`caf532d..8df5ebd`). `git ls-remote origin refs/heads/main` confirma `8df5ebde6c601fd4f81f52951053a2e6351e0bc0`. Cierre documental separado; sin force ni cambios ajenos o de configuración global.
 - **Días 1–4 verificados con sus límites.** Siguiente D5.1: CRUD de borradores, duplicación/archivo, decisiones con motivo y exportaciones CSV/Markdown; persistencia de configuraciones/ejecuciones ya preparada. D5.2: incidencias y restauración. D5.3: recorrido completo con decisión y guion. D6: congelación, A01–A14, rendimiento, auditoría final y presentación. P1/P2 aplazados; no se declara POC terminada.
 - Modern Web Guidance `forms` y `responsive-table` aplicadas. Trabajo secuencial sin agentes, subagentes ni delegación.
+
+## 26/11/2026 · Inicio de D5.1: borradores y decisiones trazables
+
+- Contratos permanentes, avances y backlog releídos; `main` limpio en `5fdf611`, origin correcto y fetch sin divergencias. Trabajo propio secuencial, sin agentes.
+- Tareas: borradores con revisiones y control de concurrencia, duplicación/archivo sin borrar ejecuciones; aprobación/rechazo con motivo y revalidación de dependencias en servidor; navegación al registro y exportaciones CSV/Markdown desde resultados guardados.
+- Pruebas previstas: migración aditiva con conservación del histórico, revisiones/conflictos, ejecuciones inmutables/reutilización, transiciones, datos/modelos obsoletos o bloqueados, exportaciones reconciliadas y escape de texto; regresión pytest/Ruff, lint/TypeScript/build, Playwright/axe y capturas en cuatro tamaños, persistencia/reinicio/reset en pila aislada. Todavía no se declaran ejecutadas para este hito.
+- Límites conservados: MMM bloqueado, creatividad con multiplicador económico 1, proyección nacional de 28 días, datos sintéticos y ninguna activación real. Decisiones en modo limitado solo para planes con dependencias defendibles y restricciones satisfechas; mantener no depende de la curva MMM.
+- Entorno: C: con unos 400 MB libres frente a 2,61 GiB al cierre anterior. Eliminada únicamente una caché Docker antigua, regenerable y marcada no compartida (`dmrbsxnr81689mxcr0emry1q3`, 1,474 GB); no se han eliminado imágenes, contenedores ni volúmenes. El espacio de Windows aún no aumenta; se comprobará antes del build.
+- Modern Web Guidance `forms` y `dialog` consultadas para validación, foco y confirmación de archivo; sin nuevas dependencias de runtime.
+
+## 26/11/2026 · D5.1 cerrado: borradores, decisiones y exportaciones
+
+### Implementado
+
+- Borradores con identidad propia, guardado sin cálculo, revisión inmutable de parámetros y control de concurrencia al editar/ejecutar/archivar. Las configuraciones D4.3 conservan su identidad y se duplican para editar. Archivo con motivo, sin borrar ejecuciones ni decisiones; reenvío idéntico idempotente y cambio de motivo terminal rechazado.
+- Migración aditiva **0006**, tablas de revisiones/eventos y recuperación de revisiones históricas. Ejecuciones por revisión/versiones/fuentes, reutilización reproducible y lectura por ID aunque falle el catálogo actual. Resultados, draws y fechas anteriores conservados.
+- Decisión terminal por ejecución y plan explícito: mantener, A, B o candidato de rejilla. Aprobar/rechazar exige motivo y congela economía, banda, presupuesto, inputs/modelos/semilla y guardrails del registro. Reenvío idéntico devuelve la misma decisión; cambiarla requiere otra ejecución.
+- Revalidación en servidor de snapshot, revisión, integridad, observaciones/calibración temporal, restricciones/riesgo y dependencias específicas. Search actualizado al recortar; MMM habilitado al reinvertir; evidencia creativa al lanzar propuesta. Cambio con esperanza negativa no se aprueba. Mantener y Search respaldado no exigen rehabilitar el MMM. Rechazo disponible con plan bloqueado o fuentes indisponibles.
+- CSV/Markdown reales desde el resultado congelado, con trazabilidad, costes, bandas, presupuestos, hipótesis y decisión. CSV UTF-8/BOM/separador `;`, escape de fórmulas en texto y valores negativos numéricos preservados; Markdown/HTML escapado. No ejecutan de nuevo el motor.
+- Interfaz integrada: guardar/editar borrador, revisar entradas/resultados previos, duplicar/archivar con diálogo y motivo, registrar decisión y navegar por ID desde el centro, descargar ambos formatos. Fechas de sistema diferenciadas del horizonte sintético, errores recuperables y contexto global conservado.
+
+### Pruebas y operación ejecutadas
+
+| Comando / comprobación | Resultado |
+|---|---|
+| QA nueva `docker compose -p margia-decisiones-qa up -d --build --wait --wait-timeout 180` con puerto 3002 | Migraciones 0001–0006, seed y tres servicios saludables |
+| `pytest tests/test_decisiones.py tests/test_escenarios.py` con código montado, después de salud | 23 passed, 1 warning en 12,47 s |
+| Regresión intermedia / casos de decisión y migración ampliados | 112 passed en 35,94 s / 15 passed en 8,27 s, antes de los últimos casos |
+| Regresión final exclusiva en QA limpia, `MARGIA_VALIDACION=1`, código montado | **117 passed, 1 warning en 37,74 s**, incluida migración DDL transaccional revertida |
+| Ruff / lint / TypeScript / build de producción | Correctos; sin nuevas dependencias ni cambios de recursos gráficos |
+| `npm.cmd run test:e2e -- --trace off` contra QA | **34 passed (3,8 min)**, incluidos cinco recorridos nuevos de D5.1 |
+| Capturas/axe y revisión manual | Formularios/registro en 1440×900, 1920×1080, 1280×720 y 390×844, diálogo, regresión de módulos y formatos fotográficos; sin infracciones detectadas ni desbordamiento global |
+| `tests/operacion.py preparar` → reinicio saludable → `verificar` | Borrador revisado/archivado, ejecución/draws/fecha, decisión y exportaciones CSV/MD exactas conservados; hechos y modelos anteriores también |
+| `tests/operacion.py reset`, solo en QA | 33,615 s; mismo checksum y evidencia de arranque, borradores/decisiones/ejecuciones eliminados, exportaciones antiguas 404 |
+| `docker compose up -d --build --wait --wait-timeout 180` | Principal actualizada conservando volumen, sin reset |
+| `./scripts/comprobar.ps1` en principal | **116 passed, 1 skipped, 1 warning en 37,29 s**, Ruff y salud correctos; se omite deliberadamente la prueba DDL exclusiva de QA |
+| `alembic current` / parada QA | `0006 (head)`; QA detenida con volumen conservado, principal saludable y solo localhost:3000 publicado |
+
+Las repeticiones no se suman como pruebas únicas. Incidencias y comandos completos en [validacion.md](validacion.md). Se corrigieron el ancho heredado de radios, foco seguro del diálogo y foco del error tras renderizar, selectores de prueba que incluían el anunciador de Next y una suposición antigua de historial vacío. Una preparación operativa se lanzó por error antes de finalizar pytest: esa superposición se descarta y se repite de forma exclusiva tras reset de QA (40,950 s). No se relaja ningún guardrail para obtener pruebas positivas.
+
+La principal confirma checksum **`6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`**, modelo creativo original **`creatividad-bfce2ee924571d327baa`**, MMM bloqueado/no optimizable y cero escenarios/ejecuciones/decisiones de QA. C: con aproximadamente **0,39 GiB** libres, sin ENOSPC en las construcciones de este corte; capacidad escasa a vigilar en próximas jornadas. Persisten el warning heredado httpx/TestClient y el aviso de color de Playwright.
+
+### Git y siguiente corte
+
+- Backend: `01b6047` — «feat: versionar escenarios y registrar decisiones y exportaciones».
+- Interfaz: `c45ece4` — «feat: integrar borradores, decisiones y descargas en la interfaz».
+- Fetch sin divergencias y push normal correcto (`5fdf611..c45ece4`); `git ls-remote origin refs/heads/main` confirma `c45ece447df02262813faa4edb195218f062b0dd`. Cierre documental separado, sin force ni cambios ajenos/globales.
+- **Días 1–4 y D5.1 verificados con sus límites.** Próximo **D5.2**: snapshots alternativos de tracking/faltantes, dependencias, bloqueo y restauración sin borrar histórico. **D5.3**: recorrido integrado principal/alternativo y guion 7–10 minutos. **D6**: congelación, aceptación global A01–A14, rendimiento, revisión visual/accesibilidad final, secretos/licencias y presentación. P1/P2 aplazados. No se declara POC terminada.
+- Modern Web Guidance `forms` y `dialog` aplicadas; trabajo propio secuencial, sin agentes, subagentes ni delegación.

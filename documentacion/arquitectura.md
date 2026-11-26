@@ -46,7 +46,7 @@ El MMM solo usa siete canales de demanda; SEM marca sigue en los hechos observad
 
 ## Pendientes deliberados
 
-CRUD completo de escenarios, decisiones/exportaciones e incidentes alternativos: backlog D5; congelación/aceptación final en D6. El comparador y la búsqueda acotada ya funcionan, con reinversión como hipótesis por el bloqueo del MMM. El efecto económico creativo sigue en 1 mientras no exista identificación sobre pedidos propios.
+Incidentes alternativos/restauración y recorrido integrado/guion: backlog D5.2–D5.3; congelación/aceptación final en D6. El comparador, los borradores revisables, las decisiones y la exportación ya están implementados en D4.3–D5.1, con reinversión como hipótesis por el bloqueo del MMM. El efecto económico creativo sigue en 1 mientras no exista identificación sobre pedidos propios.
 
 ## One Search y radar
 
@@ -95,3 +95,11 @@ El dominio `comparar_plan` concentra la valoración y es también la implementac
 La rejilla impone techo, soporte por semana, límites de recorte/canal y riesgo. Mantener canales intactos no requiere extrapolar sus curvas. El MMM bloqueado sigue excluyendo reinversión; se permiten opciones Search según sus dependencias propias. Ningún candidato factible/elegible implica abstención, sin declarar un óptimo global ni forzar la base.
 
 Migración aditiva 0005: `escenario` y `ejecucion`, configuración/revisión y resultado inmutables por contenido. Entradas predeterminadas y explícitas se normalizan igual; nuevo modelo implica otra ejecución y no modifica las previas. Se conservan arrays completos en DB, se sirven resumen/huella por API y se usa el lock común con reset. GET no simula; el historial y los filtros recuperan la misma ejecución. Método, endpoints y límites en [escenarios.md](escenarios.md).
+
+## Borradores y decisiones (D5.1)
+
+Migración 0006: marca de edición y tablas `revision_escenario`/`evento_escenario`, con recuperación de revisiones D4.3 sin cambiar ejecuciones. Configuraciones históricas de solo lectura; copias con identidad nueva y borradores editables. Cada escritura compara revisión esperada bajo el mismo lock que reset; parámetros distintos crean revisión, ejecutar congela entradas/modelos/draws. Archivo con motivo conserva todas las referencias. La ejecución rápida D4.3 sigue compatible.
+
+La tabla `decision` previa registra una resolución terminal por ejecución, plan y motivo. El servidor revalida contexto/fuentes/revisión, restricciones/riesgo y versiones de las dependencias del plan, sin reejecutar el motor. Bloqueo MMM no impide mantener o Search respaldado, pero sí reinversión. Rechazo disponible con evidencia insuficiente; ninguna aprobación activa publicidad. El registro congela economía, banda, modelos y guardrails de su momento.
+
+El frontend presenta borradores, revisiones, copias/archivo, resolución y navegación por ID, incluyendo historial desde el centro. CSV/Markdown se generan en el backend leyendo resultados guardados; textos libres escapados, cifras con signo preservadas. El proxy del mismo origen incorpora PATCH y conserva la protección JSON/origen y las cabeceras de descarga. Lectura histórica por ID disponible aunque falle el catálogo actual. Reset elimina las tablas nuevas en el orden de FK y reproduce el mundo; operación verificada solo en QA aislada, sin reset de la demo principal.

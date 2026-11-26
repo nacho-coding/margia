@@ -517,3 +517,80 @@ Muestra operativa guardada: cálculo interno de la comparación **0,0119 s**, re
 La API principal confirma checksum **`6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`**, modelo creativo **`creatividad-bfce2ee924571d327baa`**, MMM **bloqueado/no optimizable** y cero ejecuciones de QA. C: con **2,61 GiB** libres al cierre, sin ENOSPC ni caída de Docker en este corte. Se conservan warnings heredados httpx/TestClient y color Playwright. Revisión del nuevo código sin coincidencias de patrones de credenciales/datos privados; la auditoría completa sigue en D6.
 
 **Días 1–4 verificados con sus límites.** D5 CRUD/decisiones/exportaciones, incidencias/restauración y recorrido integrado/guion; D6 congelación, A01–A14, rendimiento, accesibilidad final y presentación. No se declara POC acabada. Sin agentes ni delegación.
+
+## 26/11/2026 · D5.1: borradores, decisiones y exportaciones
+
+### Entorno y alcance
+
+`main` limpio en `5fdf611`, origin correcto, fetch sin divergencias y contratos permanentes releídos. Pila **`margia-decisiones-qa` nueva** en localhost:3002, volumen independiente. La principal permanece en localhost:3000 y no se resetea. Migración aditiva 0006. Sin nuevas dependencias, cambios de modelos matemáticos, recursos gráficos ni agentes.
+
+C: comenzó con unos 400 MB libres. Se inspeccionaron cachés y se eliminó exclusivamente un registro antiguo de build cache, marcado reclamable/no compartido: `docker buildx prune --filter 'id=dmrbsxnr81689mxcr0emry1q3' --force` (1,474 GB internos de Docker). No se eliminaron imágenes, contenedores de otros proyectos ni volúmenes. El espacio de Windows no aumentó por esa operación; las construcciones terminaron sin ENOSPC. Al cierre se midieron 417.746.944 bytes libres (aprox. 0,39 GiB). Es una limitación operativa para futuras construcciones, no una prueba de rendimiento.
+
+### Comandos y resultados
+
+Desde la raíz, PowerShell:
+
+```powershell
+$env:MARGIA_PORT='3002'
+docker compose -p margia-decisiones-qa up -d --build --wait --wait-timeout 180
+docker compose -p margia-decisiones-qa run --rm --no-deps -e MARGIA_VALIDACION=1 -v "${PWD}/backend:/app" backend python -m pytest -q -p no:cacheprovider
+docker compose -p margia-decisiones-qa exec -T backend ruff check --no-cache .
+```
+
+- Migraciones 0001–0006, seed y modelos reales del proyecto en QA, tres servicios saludables.
+- Regresión final exclusiva desde estado inicial: **117 passed, 1 warning en 37,74 s**. Se ejecuta también la prueba DDL solo con `MARGIA_VALIDACION=1` y sobre QA. Baja/subida transaccional 0006 sobre una configuración/ejecución explícita D4.3, recuperación de revisión y conservación exacta de resultados/fecha, con rollback exterior. No se ejecuta ese DDL de prueba en la principal.
+- 17 casos nuevos del backend: guardado/lectura sin calcular, revisiones/reenvío/conflictos, duplicación y archivo terminal con motivo, compatibilidad D4.3, decisiones idempotentes y conflictos, bloqueo MMM/crítico/modelos obsoletos, presupuesto inviable/abstención, contribución adversa aun con riesgo tolerado al 100 %, revisión de observaciones, exportación fiel/escape, validación de IDs y motivo de longitud máxima, migración y aprobación Search/candidato con MMM bloqueado.
+- Comprobaciones intermedias: 23 passed (12,47 s) de decisiones+escenarios tras salud, regresión inicial ampliada 112 passed (35,94 s), 14 casos (7,15 s) y 15 con migración (8,27 s) antes de completar los casos finales. No se suman estas repeticiones como pruebas únicas.
+- Ruff correcto, sin dependencias nuevas. Warning heredado de Starlette/TestClient sobre httpx; no se cambia la librería fijada en este hito.
+
+Frontend, desde `frontend`:
+
+```powershell
+npm.cmd run lint
+npm.cmd run typecheck
+$env:MARGIA_QA_URL='http://127.0.0.1:3002'
+npm.cmd run test:e2e -- --trace off
+```
+
+Lint y TypeScript correctos. Build Next de producción correcto en Docker, con TypeScript y generación de rutas. **34 passed (3,8 min)** en Chromium: 29 recorridos previos y cinco nuevos. Los nuevos cubren guardar/editar/ejecutar/copiar/archivar, teclado/Escape/foco seguro, validación nativa y error recuperable, revisión externa sin sobrescritura, aprobación persistente y navegación por ID desde el centro, descargas CSV/MD, bloqueo real de B/rechazo y lectura guardada con catálogo indisponible. No se finge una incidencia real de D5.2: el error de catálogo es una fixture de transporte de QA explícita.
+
+Capturas reales y axe en 1440×900, 1920×1080, 1280×720 y 390×844: formulario, decisión y diálogo; regresión general de centro/medición/Search/experimentos/creatividad/escenarios. Sin infracciones detectadas de los tags WCAG 2 A/AA y 2.1 AA ni desbordamiento horizontal global. Revisión manual de escritorio/móvil y modal; los recursos fotográficos previos conservan sus formatos. Capturas nuevas locales `artifacts/qa/decisiones-*.png`, detalles por componente y `decision-lectura-movil.png`, excluidas de Git. Se contrastó una aparición del enlace de salto en la captura larga con una captura de viewport real: foco en el título y enlace fuera del viewport (`top=-57,25`, `bottom=-13,75`), sin reproducir el defecto en la lectura normal. La auditoría final permanece pendiente en D6.
+
+### Persistencia y reset aislado
+
+Después de finalizar las baterías, desde el mundo inicial de QA y sin pytest/Playwright concurrentes:
+
+```powershell
+docker compose -p margia-decisiones-qa exec -T -e MARGIA_VALIDACION=1 -e PYTHONPATH=/app backend python tests/operacion.py preparar
+docker compose -p margia-decisiones-qa restart
+docker compose -p margia-decisiones-qa up -d --wait --wait-timeout 180
+docker compose -p margia-decisiones-qa exec -T -e MARGIA_VALIDACION=1 -e PYTHONPATH=/app backend python tests/operacion.py verificar
+docker compose -p margia-decisiones-qa exec -T -e MARGIA_VALIDACION=1 -e PYTHONPATH=/app backend python tests/operacion.py reset
+docker compose -p margia-decisiones-qa down
+```
+
+Correctos: hechos/modelos y fechas; evaluación Search, geo aceptado, pretest/selección y A/B; ejecución con matrices completas, semilla y fecha; borrador de dos revisiones y archivado, aprobación simulada y archivos CSV/Markdown exactamente iguales tras reinicio. Reenviar comparación rápida reutiliza el resultado. La decisión guarda su evidencia original aun después de archivar el borrador.
+
+Reset final **33,615 s**: mismo checksum de negocio y modelos de arranque, cero registros de usuario y 404 para borrador/decisión/ejecución/exportación antiguos. QA detenida **sin `-v`**, volumen conservado. La preparación inserta `qa-persistencia`: para repetirla se necesita una pila nueva o restablecida, nunca la principal.
+
+### Incidencias corregidas y ejecuciones descartadas
+
+- La primera batería empezó antes de acabar la carga de Search: 7 failed/16 passed (10,86 s), respuestas 503. Repetida tras salud: 23 passed (12,47 s). No se presenta la primera como satisfactoria.
+- Primer navegador específico: cinco fallos (47,9 s): radios heredaban `inline-size:100%` de campos de texto/número y causaban desbordamiento; React `autoFocus` antes de abrir no garantizaba foco seguro; tres selectores de error incluían el anunciador de rutas de Next. Se excluyen radios de ese estilo, se fija `autofocus` nativo antes de `showModal` y se acotan los selectores.
+- Segunda pasada: 4 passed/1 failed (57,2 s), foco del conflicto aplicado antes de renderizar. Corregido con efecto tras commit de React y al terminar la petición. La batería completa final, 34 passed, incluye esa regresión. Cancelar un diálogo durante la escritura no finge cancelar la petición: se mantiene abierto con estado visible hasta respuesta.
+- La prueba API antigua exigía historial siempre vacío: una pasada con decisiones existentes dio 116 passed/1 failed (36,11 s). Se contrasta ahora el historial con PostgreSQL; repetición específica correcta (0,29 s), incluida en las regresiones finales.
+- Codex lanzó por error la preparación operativa antes de terminar otra pasada de pytest; se descartan ambas comprobaciones solapadas (pytest: 116 passed/1 failed, 40,19 s; preparación: fallo al ejecutar geo). No se atribuye ese resultado aislado a una causa de producto no demostrada ni se modifica un guardrail para resolverlo. Se restablece **solo QA** por API (40,950 s, mismo checksum) y se repite de forma exclusiva: 117 passed (37,74 s), preparar/reiniciar/verificar/reset correctos. Mantener estas comprobaciones secuenciales.
+
+### Principal y Git
+
+```powershell
+docker compose up -d --build --wait --wait-timeout 180
+./scripts/comprobar.ps1
+docker compose exec -T backend alembic current
+```
+
+Principal actualizada sin reset, conservando volumen. **116 passed, 1 skipped, 1 warning en 37,29 s**, Ruff y salud correctos. La omisión es intencional: DDL de migración reservado a QA. Alembic **0006 (head)**, tres servicios saludables, único puerto publicado `127.0.0.1:3000`. API final: cero escenarios/ejecuciones/decisiones de QA, checksum original **`6715a0eb83a485c083b145e237a124a5923da2b742d119f415fda4b131780c9d`**, predictor **`creatividad-bfce2ee924571d327baa`** / `creatividad-1.0.0` y MMM **bloqueado/no optimizable**.
+
+Diff y exclusiones revisados: no .env, credenciales, datos reales, node_modules, dumps o capturas pesadas en los commits. Sin coincidencias de patrones de tokens/claves privadas en el incremento revisado; la auditoría completa de seguridad/licencias sigue en D6. Modern Web Guidance `forms`/`dialog` aplicada; trabajo propio sin agentes.
+
+Commits de código probados: **`01b6047`** backend y **`c45ece4`** interfaz. Fetch sin divergencias; push normal `5fdf611..c45ece4`; HEAD remoto confirmado `c45ece447df02262813faa4edb195218f062b0dd`. Cierre documental separado. Próximo D5.2 incidencias/restauración; D5.3 recorrido integrado/alternativo y guion; D6 congelación/A01–A14/rendimiento/auditoría/presentación. P1/P2 aplazados y POC global aún sin cerrar.
